@@ -249,6 +249,47 @@ h2{font-size:18px;margin:0 0 12px;color:var(--pri)}
 .ordit img{width:130px;height:98px;object-fit:cover;border-radius:6px}
 .ordit b{font-size:13px}
 .credit{text-align:center;color:var(--muted);font-size:13px;margin:28px 0 12px}
+.lv-ok{color:var(--si)!important}.lv-warn{color:var(--warn)!important}.lv-bad{color:var(--no)!important}
+.chip-lv{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;vertical-align:middle}
+.chip-lv.ok{background:var(--si-soft);color:var(--si)}.chip-lv.warn{background:var(--warn-soft);color:var(--warn)}.chip-lv.bad{background:var(--no-soft);color:var(--no)}
+.mc .chip-lv{margin-top:2px;align-self:flex-start}
+.ind-ctl{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;padding:16px 18px}
+.ind-ctl .f{min-width:180px;flex:0 1 240px}
+.ind-acts{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.ind-per{margin:12px 2px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ind-warn{padding:12px 16px;margin-bottom:12px;background:var(--warn-soft);color:var(--warn);border-color:transparent;font-weight:600;font-size:14px}
+.ind-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kpi span{font-size:13px;color:var(--muted);font-weight:600}
+.kpi b{font-size:28px;color:var(--pri);line-height:1.1}
+.kpi small{font-size:12.5px;color:var(--muted)}
+.kpi .chip-lv{align-self:flex-start}
+.ind-sec{padding:18px;margin-top:14px}
+.trend{border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:#fff}
+.trend svg{display:block;min-width:640px}
+.mapwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table.imap{border-collapse:collapse;width:100%;font-size:13px}
+.imap th,.imap td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:7px 8px}
+.imap thead th{background:var(--surface2);font-size:12.5px;white-space:nowrap;position:sticky;top:0}
+.imap tbody th{text-align:left;font-weight:600;min-width:240px;max-width:360px;font-size:12.5px;position:sticky;left:0;background:var(--surface);z-index:1}
+.imap thead th:first-child{position:sticky;left:0;z-index:2}
+@media (max-width:560px){.imap tbody th{min-width:150px;font-size:11.5px}}
+.imap td.c{text-align:center;font-weight:700;min-width:62px;white-space:nowrap}
+.imap td.c small{display:block;font-weight:500;font-size:10.5px;opacity:.85}
+.imap td.ok{background:var(--si-soft);color:var(--si)}.imap td.warn{background:var(--warn-soft);color:var(--warn)}.imap td.bad{background:var(--no-soft);color:var(--no)}
+.imap td.none{color:var(--muted);font-weight:400}.imap td.na{color:var(--muted);font-weight:500;font-size:12px}
+.rk{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(120px,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.rk:last-child{border-bottom:0}
+.rbar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;display:block}
+.rbar i{display:block;height:100%;border-radius:6px}
+.rbar i.ok{background:var(--si)}.rbar i.warn{background:var(--warn)}.rbar i.bad{background:var(--no)}
+.rv{font-weight:700;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.rec{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
+.rec.cons{border-color:color-mix(in srgb,var(--no) 45%,var(--line));background:color-mix(in srgb,var(--no-soft) 45%,var(--surface))}
+.rec-h{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.rec-t{margin:6px 0;font-size:14px}
+.rec-o{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+@media (max-width:820px){.ind-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ind-acts{margin-left:0}.rk{grid-template-columns:1fr auto}.rk .rbar{grid-column:1/-1;grid-row:2}}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#1a1d2e;color:#fff;padding:10px 18px;border-radius:10px;font-size:14.5px;z-index:200;transition:.2s;max-width:90vw}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -1031,7 +1072,7 @@ const VIGIA = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/s
 const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.01-0817';
+const APP_VERSION = '2026.11.01-0852';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1299,6 +1340,12 @@ function topbar(mode) {
       <div class="tt"><b>Vigía</b><span>Control y Seguimiento Ambiental · Programa Saneamiento de Panamá</span></div>
       <div class="acts"><img class="psp hide-s" src="${LOGO}" alt="Programa Saneamiento de Panamá" title="Programa Saneamiento de Panamá">${themeBtn}<button class="btn ghost icon" data-act="ajustes" title="Ajustes">${ICON.gear}</button></div></header>`;
   }
+  if (mode === 'ind') {
+    return `<header class="top"><button class="btn ghost icon" data-act="home" title="Volver a inspecciones">${ICON.back}</button>
+      <img class="vg" src="${VIGIA}" alt="Vigía">
+      <div class="tt"><b>Indicadores</b><span>Cumplimiento por proyecto · Vigía</span></div>
+      <div class="acts">${themeBtn}<button class="btn ghost icon" data-act="ajustes" title="Ajustes">${ICON.gear}</button></div></header>`;
+  }
   const I = S.insp;
   return `<header class="top"><button class="btn ghost icon" data-act="home" title="Volver a inspecciones">${ICON.back}</button>
     <img class="vg" src="${VIGIA}" alt="Vigía">
@@ -1332,6 +1379,7 @@ function renderHome() {
   $('#app').innerHTML = topbar('home') + `<main class="wrap">
     <section class="card hero"><div><h1>Inspecciones</h1><p>Crea una ficha nueva o continúa una guardada en este dispositivo.</p></div>
       <div class="row"><button class="btn pri" data-act="nueva">+ Nueva inspección</button>
+      <button class="btn" data-act="ind">Indicadores</button>
       <span class="btn upl">Importar respaldo<input type="file" accept=".json,application/json" data-act="importar"></span></div></section>
     ${list.length ? `<section class="ilist">${cards}</section>` : `<section class="card empty">Todavía no hay inspecciones guardadas en este dispositivo.<br>Toca <b>+ Nueva inspección</b> para comenzar.</section>`}
     ${installEvt && !instalada() ? `<section class="card hero"><div><h1 style="font-size:18px">Instala Vigía en este dispositivo</h1><p>Queda en la pantalla de inicio y funciona sin internet en campo.</p></div><div class="row"><button class="btn pri" data-act="instalar">Instalar app</button></div></section>` : ''}
@@ -1475,9 +1523,9 @@ function renderStrip() {
     const filled = (s.total - s.vac) / s.total * 100;
     const tag = tabs ? 'button' : 'div';
     return `<${tag} class="fchip ${tabs && s.f.id === S.tab ? 'on' : ''} ${done ? 'done' : ''}" ${tabs ? `data-act="tab" data-f="${esc(s.f.id)}"` : ''}>
-      <b>${esc(fName(I, s.f.id))}</b><span class="p">${pctP(I, s.pct)}</span>
+      <b>${esc(fName(I, s.f.id))}</b><span class="p ${lvc(s.pct)}" title="${(nivel(s.pct) || {}).t || ''}">${pctP(I, s.pct)}</span>
       <small>${done ? 'Completo' : `faltan ${s.vac}${s.sinObs ? ` · ${s.sinObs} sin obs.` : ''}`}</small><i style="width:${filled}%"></i></${tag}>`;
-  }).join('') + `<div class="mc"><span>Cumplimiento total</span><b>${pctP(I, mc)}</b></div>
+  }).join('') + `<div class="mc"><span>Cumplimiento total</span><b class="${lvc(mc)}">${pctP(I, mc)}</b>${chipLv(mc)}</div>
     <div class="end"><button class="btn sm ${pend ? '' : 'pri'}" data-act="validar">${pend ? `Pendientes (${pend})` : 'Todo listo ✓'}</button></div>`;
   const t2 = $('#ttl2'); if (t2) t2.textContent = `${fechaLarga(I.fecha)} · ${zona(I) || 'sin frentes'}`;
   const tt = $('#ttl'); if (tt) tt.textContent = fileBase(I);
@@ -1912,6 +1960,7 @@ async function importar(file) {
   let data;
   try { data = JSON.parse(await file.text()); } catch { toast('El archivo no es un respaldo válido.'); return; }
   if (!data || data.app !== APP_KEY) { toast('El archivo no es un respaldo de Vigía.'); return; }
+  if (data.tipo === 'proyecto' && Array.isArray(data.inspecciones)) { await importarVarias(data); return; }
   let r;
   try { r = sanitizar(data); } catch (e) { toast('No se puede importar: el respaldo ' + e.message + '.'); return; }
   let { I, fotos } = r;
@@ -2353,13 +2402,393 @@ function dlgOrdenar() {
 }
 
 /* =====================================================================
+   INDICADORES — seguimiento del cumplimiento por proyecto (ISO 14001, 9.1)
+   ===================================================================== */
+const LV = { ok: '#1d7f46', warn: '#b56f00', bad: '#c42121', okBg: '#e2f3e9', warnBg: '#fff2d3', badBg: '#fdeaea' };
+/* Semáforo: Cumple ≥ 90 % · En alerta 80–89 % · No cumple ≤ 79 % (sin redondear hacia arriba) */
+function nivel(v) {
+  if (v == null) return null;
+  if (v >= 0.9 - 1e-9) return { k: 'ok', t: 'Cumple' };
+  if (v >= 0.8 - 1e-9) return { k: 'warn', t: 'En alerta' };
+  return { k: 'bad', t: 'No cumple' };
+}
+const chipLv = v => { const n = nivel(v); return n ? `<span class="chip-lv ${n.k}">${n.t}</span>` : ''; };
+
+/* Una ficha cuenta en los indicadores solo si está completa */
+function completa(I) {
+  const p = proj(I);
+  if (!I.fecha || !I.frentes || !I.frentes.length) return false;
+  return keysOf(p).every(k => I.frentes.every(f => { const v = ans(I, k, f.id); return v && (v !== 'no' || obsOf(I, k, f.id)); }));
+}
+const ym = d => { const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 7); };
+const addM = (s, n) => { const [y, m] = s.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+const mesLbl = s => { const [y, m] = s.split('-').map(Number); return MESES[m - 1] + '-' + String(y).slice(-2); };
+function mesesEntre(a, b) { const out = []; let c = a; while (c <= b && out.length < 120) { out.push(c); c = addM(c, 1); } return out; }
+
+function periodoInd() {
+  const o = S.ind, hoy = ym(new Date());
+  if (o.periodo === 'anio') { const y = hoy.slice(0, 4); return { desde: y + '-01', hasta: y + '-12', txt: 'Año ' + y }; }
+  if (o.periodo === 'rango') {
+    let d = o.desde || addM(hoy, -11), h = o.hasta || hoy; if (d > h) [d, h] = [h, d];
+    return { desde: d, hasta: h, txt: `${mesLbl(d)} a ${mesLbl(h)}` };
+  }
+  const d = addM(hoy, -11); return { desde: d, hasta: hoy, txt: `Últimos 12 meses (${mesLbl(d)} a ${mesLbl(hoy)})` };
+}
+
+function datosInd(pid, per) {
+  const p = CATALOG.find(x => x.id === pid);
+  const all = S.list.filter(i => i && i.projectId === pid && i.fecha && i.fecha.slice(0, 7) >= per.desde && i.fecha.slice(0, 7) <= per.hasta);
+  const ok = [], inc = [];
+  all.forEach(I => { let c = false; try { c = completa(I); } catch {} (c ? ok : inc).push(I); });
+  ok.sort((a, b) => a.fecha.localeCompare(b.fecha) || (a.creado || 0) - (b.creado || 0));
+  const insp = ok.map(I => {
+    const st = stats(I);
+    return { I, fecha: I.fecha, mes: I.fecha.slice(0, 7), total: cumplTotal(st),
+      progs: p.programas.map((pr, pi) => avg(I.frentes.map(f => progPct(I, pi, f.id)))) };
+  });
+  insp.forEach((x, i) => { const mismos = insp.filter(y => y.mes === x.mes); x.lbl = mesLbl(x.mes) + (mismos.length > 1 ? ` (${+x.fecha.slice(8)})` : ''); x.idx = i; });
+  const meses = mesesEntre(per.desde, per.hasta);
+  const mapa = p.programas.map((pr, pi) => meses.map(m => { const xs = insp.filter(x => x.mes === m); return { v: avg(xs.map(x => x.progs[pi])), n: xs.length }; }));
+  const ranking = p.programas.map((pr, pi) => ({ pi, nombre: pr.nombre, v: avg(insp.map(x => x.progs[pi])) }))
+    .sort((a, b) => (a.v == null) - (b.v == null) || (a.v ?? 0) - (b.v ?? 0) || a.pi - b.pi);
+  const rec = [];
+  keysOf(p).forEach(k => {
+    const occ = insp.map(x => ({ idx: x.idx, lbl: x.lbl, fs: x.I.frentes.filter(f => ans(x.I, k, f.id) === 'no').map(f => fName(x.I, f.id)) })).filter(o => o.fs.length);
+    if (occ.length < 2) return;
+    let racha = 1, best = 1;
+    for (let i = 1; i < occ.length; i++) { racha = occ[i].idx === occ[i - 1].idx + 1 ? racha + 1 : 1; best = Math.max(best, racha); }
+    const m = medida(insp[0].I, k);
+    rec.push({ k, m, veces: occ.length, racha: best, occ, ultimaSigue: occ[occ.length - 1].idx === insp.length - 1 });
+  });
+  rec.sort((a, b) => (b.racha >= 2) - (a.racha >= 2) || b.racha - a.racha || b.veces - a.veces);
+  return { p, per, insp, inc, meses, mapa, ranking, rec, promedio: avg(insp.map(x => x.total)), ultima: insp[insp.length - 1] || null };
+}
+
+/* Gráfico de tendencia (SVG, también se usa en el PDF) */
+function trendSVG(d, W = 960, H = 320) {
+  const L = 48, R = 18, T = 18, B = 46, w = W - L - R, h = H - T - B;
+  if (!d.insp.length) return '';
+  const vals = d.insp.map(x => x.total).filter(v => v != null);
+  const minV = vals.length ? Math.min(...vals) : 1;
+  const y0 = Math.max(0, Math.min(60, Math.floor((minV * 100 - 5) / 10) * 10));
+  const Y = v => T + h - (v * 100 - y0) / (100 - y0) * h;
+  const n = d.insp.length, PADX = 36, X = i => L + (n === 1 ? w / 2 : PADX + i * (w - 2 * PADX) / (n - 1));
+  const band = (a, b, c) => { const ya = Y(Math.max(a, y0 / 100)), yb = Y(b); return yb < ya ? `<rect x="${L}" y="${yb}" width="${w}" height="${ya - yb}" fill="${c}"/>` : ''; };
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Tendencia del cumplimiento total por inspección" font-family="Helvetica, Arial, sans-serif">`;
+  s += `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+  s += band(0.9, 1, LV.okBg) + band(0.8, 0.9, LV.warnBg) + (y0 < 80 ? band(y0 / 100, 0.8, LV.badBg) : '');
+  for (let g = y0; g <= 100; g += 10) s += `<line x1="${L}" x2="${L + w}" y1="${Y(g / 100)}" y2="${Y(g / 100)}" stroke="#d9dde6" stroke-width="1"/><text x="${L - 8}" y="${Y(g / 100) + 4}" font-size="12" text-anchor="end" fill="#5b6275">${g}%</text>`;
+  s += `<line x1="${L}" x2="${L + w}" y1="${Y(0.9)}" y2="${Y(0.9)}" stroke="#1d7f46" stroke-width="1.6" stroke-dasharray="6 5"/><text x="${L + w}" y="${Y(0.9) - 6}" font-size="12" text-anchor="end" fill="#1d7f46" font-weight="700">Meta 90 %</text>`;
+  const pts = d.insp.map((x, i) => x.total == null ? null : [X(i), Y(x.total)]).filter(Boolean);
+  if (pts.length > 1) s += `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="#1c1f86" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const step = Math.ceil(n / 14);
+  d.insp.forEach((x, i) => {
+    if (i % step === 0 || i === n - 1) s += `<text x="${X(i)}" y="${T + h + 20}" font-size="12" text-anchor="middle" fill="#5b6275">${esc(x.lbl)}</text>`;
+    if (x.total == null) return;
+    const lv = nivel(x.total);
+    s += `<circle cx="${X(i)}" cy="${Y(x.total)}" r="6" fill="${LV[lv.k]}" stroke="#ffffff" stroke-width="2"><title>${esc(x.lbl)}: ${pctP(x.I, x.total)} · ${lv.t}</title></circle>`;
+    s += `<text x="${X(i)}" y="${Y(x.total) - 11}" font-size="12" font-weight="700" text-anchor="middle" fill="#171a2b">${esc(pctP(x.I, x.total))}</text>`;
+  });
+  return s + '</svg>';
+}
+
+function renderInd() {
+  S.view = 'ind'; S.insp = null; S.fotos = [];
+  if (!S.ind) S.ind = { projectId: (S.list.find(i => i && i.projectId) || CATALOG[0]).projectId || CATALOG[0].id, periodo: '12m', desde: '', hasta: '' };
+  if (!CATALOG.find(p => p.id === S.ind.projectId)) S.ind.projectId = CATALOG[0].id;
+  const per = periodoInd(), d = datosInd(S.ind.projectId, per), p = d.p, fake = { projectId: p.id };
+  const pc = v => pctP(fake, v);
+  const kpi = (lbl, val, extra = '') => `<div class="card kpi"><span>${lbl}</span><b>${val}</b>${extra}</div>`;
+  const nRacha = d.rec.filter(r => r.racha >= 2).length;
+  const mapRows = p.programas.map((pr, pi) => `<tr><th scope="row">${esc(pr.nombre)}</th>${d.mapa[pi].map(c => {
+    if (!c.n) return '<td class="c none">—</td>';
+    if (c.v == null) return '<td class="c na">N/A</td>';
+    const n = nivel(c.v); return `<td class="c ${n.k}" title="${n.t}">${pc(c.v)}${c.n > 1 ? '<small>2 insp.</small>' : ''}</td>`;
+  }).join('')}</tr>`).join('');
+  const rk = d.ranking.map(r => r.v == null
+    ? `<div class="rk"><span class="rn">${esc(r.nombre)}</span><span class="rbar"></span><span class="rv hint">Sin datos (N/A)</span></div>`
+    : `<div class="rk"><span class="rn">${esc(r.nombre)}</span><span class="rbar"><i class="${nivel(r.v).k}" style="width:${Math.max(2, r.v * 100)}%"></i></span><span class="rv">${pc(r.v)} ${chipLv(r.v)}</span></div>`).join('');
+  const recs = d.rec.map(r => `<div class="rec ${r.racha >= 2 ? 'cons' : ''}">
+      <div class="rec-h"><b>${esc(r.m.prog)} · medida ${r.m.num}</b>
+        <span class="pill">${r.veces} inspecciones con “No”</span>
+        ${r.racha >= 2 ? `<span class="pill bad">Consecutivo × ${r.racha}${r.ultimaSigue ? ' · sigue abierto' : ''}</span>` : ''}</div>
+      <div class="rec-t">${esc(r.m.texto)}</div>
+      <div class="rec-o">${r.occ.map(o => `<span><b>${esc(o.lbl)}:</b> ${esc(o.fs.join(', '))}</span>`).join('')}</div></div>`).join('');
+  $('#app').innerHTML = topbar('ind') + `<main class="wrap">
+    <section class="card ind-ctl">
+      <label class="f"><span class="lbl">Proyecto</span><select class="in-t" data-act="ind-proj">${CATALOG.map(x => `<option value="${x.id}" ${x.id === p.id ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('')}</select></label>
+      <label class="f"><span class="lbl">Período</span><select class="in-t" data-act="ind-per">
+        <option value="12m" ${S.ind.periodo === '12m' ? 'selected' : ''}>Últimos 12 meses</option>
+        <option value="anio" ${S.ind.periodo === 'anio' ? 'selected' : ''}>Año en curso</option>
+        <option value="rango" ${S.ind.periodo === 'rango' ? 'selected' : ''}>Elegir rango…</option></select></label>
+      ${S.ind.periodo === 'rango' ? `<label class="f"><span class="lbl">Desde</span><input type="month" class="in-t" data-act="ind-desde" value="${esc(per.desde)}"></label>
+        <label class="f"><span class="lbl">Hasta</span><input type="month" class="in-t" data-act="ind-hasta" value="${esc(per.hasta)}"></label>` : ''}
+      <div class="ind-acts">
+        <button class="btn sm" data-act="ind-pdf" ${d.insp.length ? '' : 'disabled'}>Exportar PDF</button>
+        <button class="btn sm" data-act="ind-xlsx" ${d.insp.length ? '' : 'disabled'}>Exportar Excel</button>
+        <button class="btn sm" data-act="ind-resp">Respaldo del proyecto</button>
+      </div>
+    </section>
+    <p class="hint ind-per">${esc(per.txt)} · Criterio: <span class="chip-lv ok">Cumple ≥ 90 %</span> <span class="chip-lv warn">En alerta 80–89 %</span> <span class="chip-lv bad">No cumple ≤ 79 %</span></p>
+    ${d.inc.length ? `<div class="card ind-warn">${d.inc.length} ficha${d.inc.length === 1 ? '' : 's'} del período no ${d.inc.length === 1 ? 'se incluye' : 'se incluyen'} porque ${d.inc.length === 1 ? 'está incompleta' : 'están incompletas'}: ${d.inc.map(I => { try { return esc(fileBase(I)); } catch { return 'ficha dañada'; } }).join(', ')}.</div>` : ''}
+    ${!d.insp.length ? `<section class="card empty">No hay fichas completas de ${esc(p.nombre)} en este período.<br>Los indicadores aparecen cuando completes la primera ficha del proyecto.</section>` : `
+    <section class="ind-grid">
+      ${kpi('Inspecciones', d.insp.length)}
+      ${kpi('Cumplimiento promedio', pc(d.promedio), chipLv(d.promedio))}
+      ${kpi('Última inspección', d.ultima ? pc(d.ultima.total) : '—', d.ultima ? `${chipLv(d.ultima.total)}<small>${esc(fechaLarga(d.ultima.fecha))}</small>` : '')}
+      ${kpi('Medidas recurrentes', d.rec.length, nRacha ? `<small>${nRacha} en inspecciones consecutivas</small>` : '<small>ninguna consecutiva</small>')}
+    </section>
+    <section class="card ind-sec"><h2>Tendencia del cumplimiento total</h2><div class="trend">${trendSVG(d)}</div></section>
+    <section class="card ind-sec"><h2>Cumplimiento por programa y mes</h2>
+      <div class="mapwrap"><table class="imap"><thead><tr><th scope="col">Programa</th>${d.meses.map(m => `<th scope="col">${mesLbl(m)}</th>`).join('')}</tr></thead><tbody>${mapRows}</tbody></table></div>
+      <p class="hint" style="margin:8px 0 0">— sin inspección ese mes · N/A: todas las medidas del programa fueron N/A · “2 insp.”: promedio de dos inspecciones en el mes.</p></section>
+    <section class="card ind-sec"><h2>Programas, del menor al mayor cumplimiento</h2><p class="hint" style="margin:0 0 10px">Promedio del período.</p>${rk}</section>
+    <section class="card ind-sec"><h2>Medidas recurrentes</h2>
+      <p class="hint" style="margin:0 0 10px">Medidas con “No” en 2 o más inspecciones del período, en cualquier frente. “Consecutivo” = el incumplimiento se repitió en inspecciones seguidas (ISO 14001, 10.2).</p>
+      ${recs || '<p style="margin:0">No hay medidas recurrentes en el período.</p>'}</section>`}
+    <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía · Desarrollada por <b>Ricardo Espino G.</b></p>
+  </main>`;
+  S.indData = d;
+}
+
+/* ---------- PDF del panel ---------- */
+function svgPng(svg, w, h, scale = 2) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => { const c = document.createElement('canvas'); c.width = w * scale; c.height = h * scale; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/png')); };
+    img.onerror = () => rej(new Error('No se pudo dibujar el gráfico'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.replace('width="100%"', `width="${w}" height="${h}"`));
+  });
+}
+async function pdfInd(d) {
+  const { jsPDF } = window.jspdf, p = d.p, fake = { projectId: p.id }, pc = v => pctP(fake, v);
+  const PW = 792, PH = 612, M = 36, W = PW - 2 * M, BOT = PH - 40;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter', orientation: 'landscape', compress: true });
+  doc.setProperties({ title: `Indicadores ${p.nombre}`, creator: 'Vigía - Desarrollada por Ricardo Espino G.' });
+  const font = (st, sz) => { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  let y = M;
+  const header = first => {
+    y = M;
+    if (first) {
+      doc.addImage(LOGO, 'PNG', M, y, 54, 40);
+      font('bold', 15); doc.setTextColor(28, 31, 134); doc.text(pdfTxt(`Indicadores de cumplimiento ambiental – ${p.nombre}`), M + 66, y + 15);
+      doc.setTextColor(60); font('normal', 9);
+      const contr = d.ultima ? d.ultima.I.contratista : (p.contratistas[0] || '');
+      doc.text(pdfTxt(`${p.codigo} FCSA ${p.nombre} · Contratista: ${contr}`), M + 66, y + 29);
+      doc.text(pdfTxt(`Período: ${d.per.txt} · Generado el ${fechaCorta(ym(new Date()) + '-' + String(new Date().getDate()).padStart(2, '0'))}`), M + 66, y + 41);
+      doc.setTextColor(0); y += 56;
+    } else { font('bold', 11); doc.setTextColor(28, 31, 134); doc.text(pdfTxt(`Indicadores – ${p.nombre} · ${d.per.txt}`), M, y + 10); doc.setTextColor(0); y += 24; }
+  };
+  const nueva = () => { doc.addPage('letter', 'landscape'); header(false); };
+  const need = h => { if (y + h > BOT) nueva(); };
+  const chip = (v, x, yy) => { const n = nivel(v); if (!n) return; font('bold', 7.5); const tw = doc.getTextWidth(n.t) + 10; doc.setFillColor(...rgb(LV[n.k + 'Bg'])); doc.roundedRect(x, yy - 8, tw, 11, 5, 5, 'F'); doc.setTextColor(...rgb(LV[n.k])); doc.text(n.t, x + 5, yy); doc.setTextColor(0); return tw; };
+  header(true);
+  // Criterio
+  font('normal', 8.5); doc.text(pdfTxt('Criterio (procedimiento del Programa): Cumple ≥ 90 % · En alerta 80–89 % · No cumple ≤ 79 %. Solo fichas completas.'), M, y); y += 14;
+  if (d.inc.length) { doc.setTextColor(150, 90, 0); doc.text(pdfTxt(`${d.inc.length} ficha(s) incompleta(s) del período no se incluyen.`), M, y); doc.setTextColor(0); y += 14; }
+  // KPIs
+  const kw = (W - 3 * 10) / 4, kh = 48;
+  const kpis = [['Inspecciones', String(d.insp.length), null, ''], ['Cumplimiento promedio', pc(d.promedio), d.promedio, ''],
+    ['Última inspección', d.ultima ? pc(d.ultima.total) : '—', d.ultima ? d.ultima.total : null, d.ultima ? fechaCorta(d.ultima.fecha) : ''],
+    ['Medidas recurrentes', String(d.rec.length), null, `${d.rec.filter(r => r.racha >= 2).length} consecutivas`]];
+  kpis.forEach(([l, v, lv, sub], i) => {
+    const x = M + i * (kw + 10);
+    doc.setDrawColor(210); doc.setLineWidth(0.6); doc.roundedRect(x, y, kw, kh, 6, 6, 'S');
+    font('normal', 8); doc.setTextColor(90); doc.text(pdfTxt(l), x + 10, y + 14); doc.setTextColor(0);
+    font('bold', 18); doc.text(pdfTxt(v), x + 10, y + 36);
+    const vw = doc.getTextWidth(pdfTxt(v));
+    if (lv != null) chip(lv, x + 18 + vw, y + 34);
+    if (sub) { font('normal', 8); doc.setTextColor(90); doc.text(pdfTxt(sub), x + kw - 10, y + 14, { align: 'right' }); doc.setTextColor(0); }
+  });
+  y += kh + 18;
+  // Tendencia
+  font('bold', 11); doc.text('Tendencia del cumplimiento total', M, y); y += 6;
+  const th = Math.min(250, BOT - y);
+  const png = await svgPng(trendSVG(d, 960, 320), 960, 320);
+  doc.addImage(png, 'PNG', M, y, th * 3, th); y += th + 10;
+  // Mapa programa × mes
+  nueva();
+  font('bold', 11); doc.text(pdfTxt('Cumplimiento por programa y mes'), M, y); y += 8;
+  const c0 = 250, cw = (W - c0) / d.meses.length, RH0 = 16;
+  const mapHead = () => { doc.setFillColor(217, 225, 242); doc.rect(M, y, W, RH0, 'F'); font('bold', 7.5); doc.text('Programa', M + 4, y + 11); d.meses.forEach((m, i) => doc.text(mesLbl(m), M + c0 + i * cw + cw / 2, y + 11, { align: 'center' })); y += RH0; };
+  mapHead();
+  p.programas.forEach((pr, pi) => {
+    font('normal', 7.2); const L = doc.splitTextToSize(pdfTxt(pr.nombre), c0 - 8); const h = Math.max(16, L.length * 8.6 + 6);
+    if (y + h > BOT) { nueva(); mapHead(); }
+    doc.setDrawColor(215); doc.setLineWidth(0.4); doc.rect(M, y, W, h, 'S');
+    font('normal', 7.2); L.forEach((l, i) => doc.text(l, M + 4, y + h / 2 - (L.length - 1) * 4.3 + 2.5 + i * 8.6));
+    d.mapa[pi].forEach((c, i) => {
+      const x = M + c0 + i * cw;
+      doc.line(x, y, x, y + h);
+      if (!c.n) { font('normal', 8); doc.setTextColor(150); doc.text('-', x + cw / 2, y + h / 2 + 3, { align: 'center' }); doc.setTextColor(0); return; }
+      if (c.v == null) { font('normal', 7); doc.setTextColor(110); doc.text('N/A', x + cw / 2, y + h / 2 + 3, { align: 'center' }); doc.setTextColor(0); return; }
+      const n = nivel(c.v); doc.setFillColor(...rgb(LV[n.k + 'Bg'])); doc.rect(x + 0.4, y + 0.4, cw - 0.8, h - 0.8, 'F');
+      font('bold', 7.5); doc.setTextColor(...rgb(LV[n.k])); doc.text(pc(c.v) + (c.n > 1 ? '*' : ''), x + cw / 2, y + h / 2 + 3, { align: 'center' }); doc.setTextColor(0);
+    });
+    y += h;
+  });
+  font('normal', 7.5); doc.setTextColor(90); y += 11; doc.text(pdfTxt('- sin inspección ese mes · N/A: todas las medidas del programa fueron N/A · *: promedio de dos inspecciones en el mes.'), M, y); doc.setTextColor(0); y += 18;
+  // Ranking
+  need(40);
+  font('bold', 11); doc.text(pdfTxt('Programas, del menor al mayor cumplimiento (promedio del período)'), M, y); y += 10;
+  d.ranking.forEach(r => {
+    font('normal', 7.5); const L = doc.splitTextToSize(pdfTxt(r.nombre), 300); const h = Math.max(15, L.length * 8.6 + 5);
+    need(h);
+    L.forEach((l, i) => doc.text(l, M, y + 10 + i * 8.6));
+    const bx = M + 310, bw = 300;
+    doc.setFillColor(236, 238, 243); doc.rect(bx, y + 3, bw, 8, 'F');
+    if (r.v != null) { const n = nivel(r.v); doc.setFillColor(...rgb(LV[n.k])); doc.rect(bx, y + 3, Math.max(2, bw * r.v), 8, 'F'); font('bold', 8); doc.text(pc(r.v), bx + bw + 8, y + 10); chip(r.v, bx + bw + 44, y + 10); }
+    else { font('normal', 7.5); doc.setTextColor(110); doc.text('Sin datos (N/A)', bx + bw + 8, y + 10); doc.setTextColor(0); }
+    y += h;
+  });
+  // Recurrentes
+  y += 10; need(50);
+  font('bold', 11); doc.text(pdfTxt('Medidas recurrentes (“No” en 2 o más inspecciones)'), M, y); y += 6;
+  if (!d.rec.length) { font('normal', 9); y += 12; doc.text(pdfTxt('No hay medidas recurrentes en el período.'), M, y); }
+  else {
+    const cols = [[0, 280, 'Medida'], [280, 60, 'Inspecciones'], [340, 90, 'Consecutivo'], [430, W - 430, 'Detalle (inspección: frentes)']];
+    const recHead = () => { doc.setFillColor(217, 225, 242); doc.rect(M, y, W, 15, 'F'); font('bold', 7.5); cols.forEach(([x, w, t]) => doc.text(pdfTxt(t), M + x + 4, y + 10.5)); y += 15; };
+    recHead();
+    d.rec.forEach(r => {
+      font('normal', 7.2);
+      const a = doc.splitTextToSize(pdfTxt(`${r.m.prog} · medida ${r.m.num}: ${r.m.texto}`), 272);
+      const b = doc.splitTextToSize(pdfTxt(r.occ.map(o => `${o.lbl}: ${o.fs.join(', ')}`).join(' · ')), W - 438);
+      const h = Math.max(a.length, b.length) * 8.6 + 6;
+      if (y + h > BOT) { nueva(); recHead(); }
+      doc.setDrawColor(215); doc.setLineWidth(0.4); doc.rect(M, y, W, h, 'S');
+      font('normal', 7.2); a.forEach((l, i) => doc.text(l, M + 4, y + 10 + i * 8.6)); b.forEach((l, i) => doc.text(l, M + 434, y + 10 + i * 8.6));
+      font('bold', 8); doc.text(String(r.veces), M + 310, y + 10, { align: 'center' });
+      if (r.racha >= 2) { doc.setTextColor(...rgb(LV.bad)); doc.text(pdfTxt(`Sí (× ${r.racha})${r.ultimaSigue ? ' abierto' : ''}`), M + 344, y + 10); doc.setTextColor(0); }
+      else { font('normal', 8); doc.text('No', M + 344, y + 10); }
+      y += h;
+    });
+  }
+  const n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) { doc.setPage(i); font('normal', 8); doc.setTextColor(90); doc.text(pdfTxt(`Página ${i} de ${n} – Vigía · Indicadores ${p.nombre}`), PW / 2, PH - 18, { align: 'center' }); doc.setTextColor(0); }
+  return doc;
+}
+
+/* ---------- Excel (.xlsx) sin librerías externas ---------- */
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+const crc32 = u => { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+function zip(files) {
+  const enc = new TextEncoder(), parts = [], cen = []; let off = 0;
+  files.forEach(([name, text]) => {
+    const nb = enc.encode(name), db = enc.encode(text), crc = crc32(db);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint32(14, crc, true); h.setUint32(18, db.length, true); h.setUint32(22, db.length, true); h.setUint16(26, nb.length, true);
+    parts.push(new Uint8Array(h.buffer), nb, db);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint32(16, crc, true); c.setUint32(20, db.length, true); c.setUint32(24, db.length, true); c.setUint16(28, nb.length, true); c.setUint32(42, off, true);
+    cen.push(new Uint8Array(c.buffer), nb);
+    off += 30 + nb.length + db.length;
+  });
+  const csz = cen.reduce((a, b) => a + b.length, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csz, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...cen, new Uint8Array(e.buffer)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+const xesc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+const colL = i => { let s = ''; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+function hoja(rows, widths) {
+  /* celdas: string | número | {v, t:'pct'|'date'} ; la fila 1 va en negrita */
+  const xr = rows.map((r, ri) => `<row r="${ri + 1}">${r.map((c, ci) => {
+    const ref = colL(ci) + (ri + 1);
+    if (c == null || c === '') return '';
+    if (typeof c === 'object') {
+      if (c.v == null) return '';
+      if (c.t === 'pct') return `<c r="${ref}" s="1"><v>${c.v}</v></c>`;
+      if (c.t === 'date') { const [y, m, d] = c.v.split('-').map(Number); return `<c r="${ref}" s="3"><v>${(Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 864e5}</v></c>`; }
+    }
+    if (typeof c === 'number') return `<c r="${ref}"${ri === 0 ? ' s="2"' : ''}><v>${c}</v></c>`;
+    return `<c r="${ref}" t="inlineStr"${ri === 0 ? ' s="2"' : ''}><is><t xml:space="preserve">${xesc(c)}</t></is></c>`;
+  }).join('')}</row>`).join('');
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${xr}</sheetData></worksheet>`;
+}
+function xlsxInd(d) {
+  const p = d.p, nv = v => (nivel(v) || {}).t || '';
+  const resumen = [['Proyecto', 'Código', 'Fecha', 'Frentes', 'Cumplimiento total', 'Nivel']]
+    .concat(d.insp.map(x => [p.nombre, p.codigo, { v: x.fecha, t: 'date' }, x.I.frentes.map(f => fName(x.I, f.id)).join(', '), { v: x.total, t: 'pct' }, nv(x.total)]));
+  const prog = [['Proyecto', 'Fecha', 'Frente', 'Programa', 'Cumplimiento del programa', 'Nivel']];
+  d.insp.forEach(x => x.I.frentes.forEach(f => p.programas.forEach((pr, pi) => { const v = progPct(x.I, pi, f.id); prog.push([p.nombre, { v: x.fecha, t: 'date' }, fName(x.I, f.id), pr.nombre, v == null ? 'N/A' : { v, t: 'pct' }, nv(v)]); })));
+  const mapa = [['Programa'].concat(d.meses.map(mesLbl))].concat(p.programas.map((pr, pi) => [pr.nombre].concat(d.mapa[pi].map(c => !c.n ? '' : c.v == null ? 'N/A' : { v: c.v, t: 'pct' }))));
+  const rec = [['Programa', 'Medida N°', 'Medida', 'Inspecciones con "No"', 'Racha consecutiva', 'Sigue abierta', 'Detalle']]
+    .concat(d.rec.map(r => [r.m.prog, r.m.num, r.m.texto, r.veces, r.racha, r.ultimaSigue ? 'Sí' : 'No', r.occ.map(o => `${o.lbl}: ${o.fs.join(', ')}`).join(' | ')]));
+  const sheets = [['Resumen', hoja(resumen, [14, 12, 12, 40, 18, 12])], ['Por programa', hoja(prog, [14, 12, 24, 60, 22, 12])],
+    ['Mapa programa-mes', hoja(mapa, [60].concat(d.meses.map(() => 10)))], ['Recurrentes', hoja(rec, [40, 10, 70, 20, 16, 12, 60])]];
+  const files = [
+    ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
+    ['_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ['xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s, i) => `<sheet name="${xesc(s[0])}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets></workbook>`],
+    ['xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`],
+    ['xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="10" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>`],
+  ].concat(sheets.map((s, i) => [`xl/worksheets/sheet${i + 1}.xml`, s[1]]));
+  return zip(files);
+}
+const nomPer = d => d.per.desde === d.per.hasta ? mesLbl(d.per.desde) : `${mesLbl(d.per.desde)} a ${mesLbl(d.per.hasta)}`;
+
+/* ---------- Respaldo de todo un proyecto ---------- */
+function dlgRespProyecto(pid) {
+  const p = CATALOG.find(x => x.id === pid), lista = S.list.filter(i => i && i.projectId === pid);
+  modal({
+    title: 'Respaldo del proyecto ' + esc(p.nombre),
+    body: `<p style="margin:0 0 10px">Guarda en un solo archivo las <b>${lista.length}</b> ficha${lista.length === 1 ? '' : 's'} de ${esc(p.nombre)} que hay en este dispositivo. En otro equipo se carga con “Importar respaldo”.</p>
+      <label class="chk"><input type="checkbox" id="rp-fotos" checked> Incluir las fotos</label>
+      <p class="hint" style="margin:0">Sin fotos el archivo pesa mucho menos y basta para ver los indicadores en otro equipo.</p>`,
+    foot: `<button class="btn" data-x>Cancelar</button><button class="btn pri" id="rp-ok" ${lista.length ? '' : 'disabled'}>Exportar</button>`,
+    onMount: (ov, close) => { $('#rp-ok', ov).onclick = async () => { const f = $('#rp-fotos', ov).checked; close(); await exportarProyecto(pid, f); }; },
+  });
+}
+async function exportarProyecto(pid, conFotos) {
+  await flush();
+  const p = CATALOG.find(x => x.id === pid), lista = S.list.filter(i => i && i.projectId === pid);
+  let fotos = [];
+  if (conFotos) for (const I of lista) fotos = fotos.concat(await DB.fotosDe(I.id));
+  const data = { app: APP_KEY, version: 2, tipo: 'proyecto', proyecto: pid, exportado: new Date().toISOString(), inspecciones: lista, fotos };
+  const hoy = ym(new Date()) + '-' + String(new Date().getDate()).padStart(2, '0');
+  download(new Blob([JSON.stringify(data)], { type: 'application/json' }), `Vigia respaldo ${p.nombre} ${hoy}${conFotos ? '' : ' (sin fotos)'}.json`);
+  toast(`Respaldo exportado: ${lista.length} ficha${lista.length === 1 ? '' : 's'}${conFotos ? `, ${fotos.length} foto${fotos.length === 1 ? '' : 's'}` : ', sin fotos'}`);
+}
+async function importarVarias(data) {
+  const raws = data.inspecciones.slice(0, 500), fotosAll = Array.isArray(data.fotos) ? data.fotos : [];
+  const ok = []; let malas = 0;
+  raws.forEach(raw => {
+    try { ok.push(sanitizar({ inspeccion: raw, fotos: fotosAll.filter(f => f && raw && f.inspId === raw.id) })); }
+    catch { malas++; }
+  });
+  if (!ok.length) { toast('No se puede importar: el respaldo no tiene fichas válidas.'); return; }
+  const existen = ok.filter(r => S.list.some(x => x.id === r.I.id));
+  let modo = 'reemplazar';
+  if (existen.length) {
+    modo = await ask('Fichas que ya existen', `El respaldo trae <b>${ok.length}</b> ficha${ok.length === 1 ? '' : 's'}. <b>${existen.length}</b> ya ${existen.length === 1 ? 'está' : 'están'} en este dispositivo. ¿Qué hago con ${existen.length === 1 ? 'ella' : 'ellas'}?`,
+      [{ label: 'Cancelar', value: null }, { label: 'Dejar las de este dispositivo', value: 'omitir' }, { label: 'Reemplazar con las del respaldo', value: 'reemplazar', cls: 'pri' }]);
+    if (!modo) return;
+  }
+  let n = 0, nf = 0;
+  for (const r of ok) {
+    const ex = S.list.some(x => x.id === r.I.id);
+    if (ex && modo === 'omitir') continue;
+    if (ex) for (const ph of await DB.fotosDe(r.I.id)) await DB.del('fotos', ph.id);
+    await DB.put('inspecciones', r.I); n++;
+    for (const ph of r.fotos) { await DB.put('fotos', ph); nf++; }
+  }
+  S.list = await DB.all('inspecciones');
+  toast(`Importadas ${n} ficha${n === 1 ? '' : 's'} y ${nf} foto${nf === 1 ? '' : 's'}${malas ? ` · ${malas} dañada${malas === 1 ? '' : 's'} no se importaron` : ''}`);
+  if (S.view === 'home') renderHome(); else if (S.view === 'ind') renderInd();
+}
+
+const lvc = v => { const n = nivel(v); return n ? 'lv-' + n.k : ''; };
+
+/* =====================================================================
    EVENTOS
    ===================================================================== */
 document.addEventListener('click', async e => {
   const t = e.target.closest('[data-act]'); if (!t || !$('#app').contains(t)) return;
   const d = t.dataset, I = S.insp;
   switch (d.act) {
-    case 'theme': setTheme(getTheme() === 'dark' ? 'light' : 'dark'); S.view === 'home' ? renderHome() : (() => { const tmp = document.createElement('div'); tmp.innerHTML = topbar('edit'); $('.top').replaceWith(tmp.firstElementChild); renderStrip(); })(); break;
+    case 'theme': setTheme(getTheme() === 'dark' ? 'light' : 'dark'); S.view === 'ind' ? renderInd() : S.view === 'home' ? renderHome() : (() => { const tmp = document.createElement('div'); tmp.innerHTML = topbar('edit'); $('.top').replaceWith(tmp.firstElementChild); renderStrip(); })(); break;
     case 'ajustes': dlgAjustes(); break;
     case 'instalar': if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') installEvt = null; renderHome(); } break;
     case 'nueva': dlgNueva(); break;
@@ -2395,6 +2824,18 @@ document.addEventListener('click', async e => {
     case 'delf': delFrente(d.f); break;
     case 'validar': dlgValidar(false); break;
     case 'pdf': iniciarPDF(); break;
+    case 'ind': await flush(); S.list = await DB.all('inspecciones'); renderInd(); window.scrollTo(0, 0); break;
+    case 'ind-resp': dlgRespProyecto(S.ind.projectId); break;
+    case 'ind-pdf': case 'ind-xlsx': {
+      const d = S.indData; if (!d || !d.insp.length) return;
+      t.disabled = true; const lbl = t.textContent; t.textContent = 'Generando…';
+      try {
+        if (t.dataset.act === 'ind-pdf') { const doc = await pdfInd(d); download(doc.output('blob'), `Indicadores ${d.p.nombre} ${nomPer(d)}.pdf`); }
+        else download(xlsxInd(d), `Indicadores ${d.p.nombre} ${nomPer(d)}.xlsx`);
+        toast('Archivo generado');
+      } catch (er) { console.error(er); toast('No se pudo generar: ' + er.message); }
+      t.disabled = false; t.textContent = lbl; break;
+    }
   }
 });
 
@@ -2439,6 +2880,10 @@ document.addEventListener('change', async e => {
     case 'usarfirma': I.usarFirma = t.checked; touch(); break;
     case 'foto': await addFotos([...t.files], d.k, d.f); t.value = ''; break;
     case 'importar': if (t.files[0]) await importar(t.files[0]); t.value = ''; break;
+    case 'ind-proj': S.ind.projectId = t.value; renderInd(); break;
+    case 'ind-per': S.ind.periodo = t.value; if (t.value === 'rango' && !S.ind.desde) { const per = periodoInd(); S.ind.desde = per.desde; S.ind.hasta = per.hasta; } renderInd(); break;
+    case 'ind-desde': if (t.value) { S.ind.desde = t.value; renderInd(); } break;
+    case 'ind-hasta': if (t.value) { S.ind.hasta = t.value; renderInd(); } break;
   }
 });
 
