@@ -358,6 +358,9 @@ table.imap{border-collapse:collapse;width:100%;font-size:var(--fs-sm)}
 .tmes .fm{display:inline-block;margin:2px 12px 2px 0;white-space:nowrap}
 .tmes tr.flash td,.tmes tr.flash th{background:var(--pri-soft)}
 .trend circle[data-mes]{cursor:pointer}
+/* Observaciones adicionales */
+.oa-t{width:100%;min-height:180px;resize:vertical;padding:12px;border-radius:var(--r-md);border:1.5px solid var(--line2);background:var(--surface);line-height:1.45}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
 /* Etiqueta que puede partirse en dos líneas */
 .pill.wrap{white-space:normal;max-width:100%}
 /* Utilidades de margen */
@@ -1275,6 +1278,261 @@ const CATALOG = [
     "subs": {}
    }
   ]
+ },
+ {
+  "id": "cyp",
+  "nombre": "Cáceres y Perico",
+  "sigla": "CyP",
+  "titulo": "FICHA PARA EL CONTROL Y SEGUIMIENTO DE GESTIÓN AMBIENTAL",
+  "tituloBloque": [
+   "REGISTRO ESPECÍFICO SOCIOAMBIENTAL",
+   "FICHA PARA EL CONTROL Y SEGUIMIENTO DE GESTIÓN AMBIENTAL",
+   "EN LA ETAPA DE CONSTRUCCIÓN",
+   "PROYECTO: “DISEÑO Y CONSTRUCCIÓN DEL SISTEMA DE ALCANTARILLADO SANITARIO DE LOS RIOS CÁCERES Y PERICO- ARRAIJÁN”"
+  ],
+  "subtitulo": "",
+  "codigo": "R-PA03-15",
+  "codigoTxt": "Código: R-PA03-15",
+  "edicion": "1",
+  "vigencia": "septiembre 2022",
+  "vigenciaLbl": "Fecha",
+  "banda": "PROGRAMA DE PUNTOS DE INSPECCIÓN / SEGUIMIENTO DE GESTIÓN AMBIENTAL / ETAPA DE CONSTRUCCIÓN",
+  "contratistas": [
+   "A. Goetze Lobato Engenharia S.A. (GEL)"
+  ],
+  "campos": [
+   "inspectores",
+   "fecha",
+   "zona",
+   "contratista",
+   "acompanamiento"
+  ],
+  "etiquetaW": 192,
+  "labels": {
+   "fecha": "Fecha:",
+   "zona": "TRAZABILIDAD O ZONIFICACIÓN DE REFERENCIA:"
+  },
+  "firmaTxt": "Firma responsable Ambiente UCP-PSP:",
+  "evidenciaTxt": "Notas / Hallazgos",
+  "actividadesTxt": [
+   "Descripción operación"
+  ],
+  "obsTxt": "OBSERVACIONES",
+  "colSN": [
+   "SI",
+   "NO",
+   "N/A"
+  ],
+  "colorEncabezado": "blanco",
+  "colorPrograma": "gris",
+  "mayusculasFrente": false,
+  "encabezadoBold": true,
+  "valoresBold": true,
+  "decimales": 1,
+  "conteos": false,
+  "programas": [
+   {
+    "nombre": "PLAN DE CONTROL DE CALIDAD DEL AIRE",
+    "num": "1",
+    "medidas": [
+     "Se realiza aspersión de agua en las vías para controlar la generación de polvo en sitio.",
+     "El material granulado y otros generados de excavaciones se cubre con lona plástica cuando son almacenados temporalmente en el sitio de la obra.",
+     "Los equipos que trasladan materiales, utilizan lona para cubrir el material.",
+     "Se evita la dispersion de material particulado mediante barreras, cercos o mallas como cobertura temporales para la proteccion contra el viento."
+    ],
+    "numsTxt": [
+     "1.1",
+     "1.2",
+     "1.3",
+     "1.4"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "PLAN DE CONTROL DE CALIDAD DEL AGUA",
+    "num": "2",
+    "medidas": [
+     "No se evidencian desechos generados por la construcción en los cuerpos de agua cercanos.",
+     "Se evidencian medidas de control de la erosión y sedimentación evitando el lavado hacia los cuerpos de agua.",
+     "Se realizan las intervenciones a los cauces en época seca, procurando mantener el mismo régimen de caudal.",
+     "Para los trabajos en cuerpos de agua, se cuentan con los permisos de obra en cauce necesarios.",
+     "Se cuenta con tinas para el lavado de concreto y evitar descargas de restos de concreto en los cuerpos de agua"
+    ],
+    "numsTxt": [
+     "2.1",
+     "2.2",
+     "2.3",
+     "2.4",
+     "2.5"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "PLAN DE CONTROL DE CALIDAD DE RUIDO Y VIBRACIONES",
+    "num": "3",
+    "medidas": [
+     "El equipo o maquinaria utilizado se encuentra en buenas condiciones y permanecen apagados cuando no se estén utilizando.",
+     "Los trabajadores cuentan con elementos de protección auditiva durante actividades que requieran su uso.",
+     "Se utilizan elmentos disipadores de ruido o vibraciones, en los equipos utilizados en la obra."
+    ],
+    "numsTxt": [
+     "3.1",
+     "3.2",
+     "3.3"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "PLAN DE CONTROL DE LA CALIDAD DEL SUELO (CONTROL DE LA SEDIMENTACIÓN, CONTAMINACIÓN Y EROSIÓN)",
+    "num": "4",
+    "medidas": [
+     "Evitan mantener los tramos de zanjas abiertos por más de tres días.",
+     "Se cuentan con canales de desvío temporal para transportar los flujos de agua, a fin de mantener el área de trabajo seca.",
+     "Cubrir los promontorios de tierra generados durante las actividades de la obra.",
+     "Se evitan las excavaciones y remociones de suelo de forma innecesaria.",
+     "Se realiza instalación de medidas temporales y permanentes para el control de la erosión.",
+     "Se cuentan con elementos de protección ambiental para la atención de incidencias o emergencias ambientales, como por ejemplo, Kit antiderrames.",
+     "Se documentan las atenciones a los tratamientos de suelo contaminado, a través de las fichas de control de emergencias ambientales."
+    ],
+    "numsTxt": [
+     "4.1",
+     "4.2",
+     "4.3",
+     "4.4",
+     "4.5",
+     "4.6",
+     "4.7"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "PLAN DE PROTECCIÓN DE FLORA Y FAUNA SILVESTRE",
+    "num": "5",
+    "medidas": [
+     "Se cuentan con letreros indicativos de protección de flora y fauna silvestre",
+     "Se cuenta con un programa de rescate y reubicación de fauna silvestre dentro de las áreas de impacto directo e indirecto de la obra.",
+     "Se minimiza el impacto de las actividades sobre las poblaciones vegetales y animales que se puedan generar por la ejecución del proyecto.",
+     "Las actividades del proyecto se desarrollan estrictamente sólo en el área planificada, sin intervenir innecesariamente otros sitios."
+    ],
+    "numsTxt": [
+     "5.1",
+     "5.2",
+     "5.3",
+     "5.4"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "PLAN DE MANEJO DE MATERIALES Y EQUIPOS DE CONSTRUCCIÓN",
+    "num": "6",
+    "medidas": [
+     "Se cuenta con almacenamiento o acopio de materiales, debidamente señalizados y de forma segura.",
+     "El acopio de los materiales no podrá interferir con el tráfico peatonal y/o vehicular y deberán estar protegidos contra la acción erosiva del agua y aire.",
+     "Los materiales o residuos de la construcción que por su naturaleza puedan ser donados a la comunidad, deberán ser documentados y en acompañamiento con el área social.",
+     "No se dispondrán los residuos de asfalto, caliche o de construcción en las áreas verdes."
+    ],
+    "numsTxt": [
+     "6.1",
+     "6.2",
+     "6.3",
+     "6.4"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "PLAN DE MANEJO DE DESECHOS LÍQUIDOS Y SÓLIDOS",
+    "num": "7",
+    "medidas": [
+     "Se cuentan con baños sanitarios portátiles y estos reciben mantenimiento periódico por una empresa autorizada.",
+     "No se evidencia vertido de aceites usados o materiales contaminados directamente sobre el suelo.",
+     "Aquel material contaminado es almacenado en recipientes y sitios dispuestos para tal fin.",
+     "No se evidencias vertidos directos a cuerpos de aguas, drenajes y/o escorrentias superficiales.",
+     "Segregación apropiada y etiquetado de los recipientes de residuos sólidos. Los cuales cuentan con sitio de disposición temporal en el proyecto.",
+     "Se dispone de evidencia de la eliminación planificada y segura de los desechos generados por las actividades, en sitios de disposición final autorizados."
+    ],
+    "numsTxt": [
+     "7.1",
+     "7.2",
+     "7.3",
+     "7.4",
+     "7.5",
+     "7.6"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "PLAN DE MANEJO CASETAS DE CONSTRUCCIÓN O DE CAMPAMENTOS",
+    "num": "8",
+    "medidas": [
+     "El campamento está debidamente identificado, manteniendo el orden y aseo.",
+     "Se cuentan con recipientes identificados para el manejo de los desechos en el campamento.",
+     "Se cuentan con permisos para la utilización de áreas a ocupar, en caso de que así lo requiera.",
+     "Se cuentan con elementos de protección ambiental para la atención de incidencias o emergencias ambientales, como por ejemplo, Kit de derrames.",
+     "Se cuenta con letrero de estudio de impacto ambiental en un lugar visible"
+    ],
+    "numsTxt": [
+     "8.1",
+     "8.2",
+     "8.3",
+     "8.4",
+     "8.5"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "CONTROL DE LA DOCUMENTACIÓN",
+    "num": "9",
+    "medidas": [
+     "Se cuentan con los permisos ambientales y están disponibles para su consulta.",
+     "Se evidencian registros de control de la documentación ambiental.",
+     "Se cuentan con listados de las capacitaciones dictadas al personal de obra.",
+     "Registros de mantenimiento preventivo/correctivo de los vehiculos utilizados en la obra.",
+     "Se realiza el envío de programación semanal o cronograma de trabajo, y se evidencia el nivel de cumplimiento de las mismas."
+    ],
+    "numsTxt": [
+     "9.1",
+     "9.2",
+     "9.3",
+     "9.4",
+     "9.5"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "MANEJO DE OBRAS DE CONCRETO",
+    "num": "10",
+    "medidas": [
+     "El almacenamiento del cemento se realiza en sitios secos y aislados del suelo, sin sobrepasar el soporte de los mismos.",
+     "El personal cuenta con elementos de protección personal para manipular el hormigón.",
+     "Las mezclas de concreto se harán sobre plataformas metálicas o sobre geotextil, evitando la mezcla directa sobre el suelo.",
+     "Está prohibido el lavado de las mezcladoras de concreto en los frentes de trabajo o en cuerpos de agua.",
+     "Las formaletas u otros elementos utilizados para la realización o manejo de obras de concreto, son removidos cuando los mismos no sean utilizados."
+    ],
+    "numsTxt": [
+     "10.1",
+     "10.2",
+     "10.3",
+     "10.4",
+     "10.5"
+    ],
+    "subs": {}
+   },
+   {
+    "nombre": "CONTROL DE CRIADEROS DE VECTORES",
+    "num": "11",
+    "medidas": [
+     "Fumigación contra vectores, según establece el Decreto Municipal Nº 001 de 08 de enero 2020",
+     "Los recipientes para el almacenamiento de agua estan tapados",
+     "El área esta libre de acumulación de agua innecesaria"
+    ],
+    "numsTxt": [
+     "11.1",
+     "11.2",
+     "11.3"
+    ],
+    "subs": {}
+   }
+  ]
  }
 ];
 const LOGO = 'data:image/png;base64,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';
@@ -1283,7 +1541,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.02-1053';
+const APP_VERSION = '2026.11.02-1207';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1299,7 +1557,7 @@ const SAFE_ID = /^[a-z0-9]{4,40}$/i;
 CATALOG.forEach(p => p.programas.forEach(pr => {
   pr.subs ||= {};
   let n = 0;
-  pr.nums = pr.medidas.map((m, mi) => { if (pr.subs[mi] != null) n = 0; return ++n; });
+  pr.nums = pr.numsTxt || pr.medidas.map((m, mi) => { if (pr.subs[mi] != null) n = 0; return ++n; });
 }));
 const LABELS = { inspectores: 'Inspección realizada por:', zona: 'Zona / área:', fecha: 'Fecha:', proyecto: 'Proyecto:', contratista: 'Contratista:', acompanamiento: 'Acompañamiento:' };
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
@@ -1386,7 +1644,7 @@ function subOf(pr, mi) { let s = ''; Object.keys(pr.subs).forEach(i => { if (+i 
 function fileBase(I) {
   const p = proj(I);
   const d = I.fecha ? new Date(I.fecha + 'T12:00:00') : new Date();
-  return `FCSA ${p.nombre} ${MESES[d.getMonth()]}-${String(d.getFullYear()).slice(-2)}`;
+  return `FCSA ${p.sigla || p.nombre} ${MESES[d.getMonth()]}-${String(d.getFullYear()).slice(-2)}`;
 }
 function fechaLarga(f) {
   if (!f) return 'Sin fecha';
@@ -1749,6 +2007,7 @@ function renderEditor() {
     <div id="progs"></div>
     <div class="foot">
       <button class="btn" data-act="exportar" data-id="${esc(I.id)}">Exportar respaldo</button>
+      <button class="btn" data-act="obsadic">${obsAdicLbl(I)}</button>
       <button class="btn" data-act="validar">Revisar ficha</button>
       <button class="btn pri" data-act="pdf">Generar PDF</button>
     </div>
@@ -1771,14 +2030,14 @@ function renderHdr(open) {
   const I = S.insp, p = proj(I);
   const contrs = [...new Set([...p.contratistas, ...(A.contratistas[p.id] || []), I.contratista].filter(Boolean))];
   return `<details class="card hdr" id="hdr" ${open ? 'open' : ''}>
-    <summary>${ICON.chev} Datos de la inspección <span class="sub" id="hsub">${esc(I.inspectores.length + ' inspector' + (I.inspectores.length === 1 ? '' : 'es') + ' · ' + I.frentes.length + ' frente' + (I.frentes.length === 1 ? '' : 's'))}</span></summary>
+    <summary>${ICON.chev} Datos de la inspección <span class="sub" id="hsub">${esc((campos(p).includes('inspectores') ? I.inspectores.length + ' inspector' + (I.inspectores.length === 1 ? '' : 'es') + ' · ' : '') + I.frentes.length + ' frente' + (I.frentes.length === 1 ? '' : 's'))}</span></summary>
     <div class="hgrid">
       <label class="f"><span class="lbl">Proyecto</span><select class="in-t" data-act="proj">${CATALOG.map(x => `<option value="${x.id}" ${x.id === I.projectId ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('')}</select></label>
       <label class="f"><span class="lbl">Fecha</span><input type="date" class="in-t" data-act="fecha" value="${esc(I.fecha || '')}"></label>
-      <label class="f s2"><span class="lbl">Contratista</span><select class="in-t" data-act="contr">
+      <label class="f s2"><span class="lbl">Contratista${campos(p).includes('contratista') ? '' : ' (no sale en la ficha)'}</span><select class="in-t" data-act="contr">
         ${contrs.map(c => `<option ${c === I.contratista ? 'selected' : ''}>${esc(c)}</option>`).join('')}
         <option value="__otro">Otro…</option></select></label>
-      ${personasHTML('inspectores', 'Inspección realizada por', 'Agrega al menos una persona.', 'Nombre (Entidad), ej. Ricardo Espino (UCP)')}
+      ${campos(p).includes('inspectores') ? personasHTML('inspectores', 'Inspección realizada por', 'Agrega al menos una persona.', 'Nombre (Entidad), ej. Ricardo Espino (UCP)') : ''}
       ${campos(p).includes('acompanamiento') ? personasHTML('acompanamiento', 'Acompañamiento', 'Opcional.', 'Nombre o entidad, ej. CSO, AYESA') : ''}
       ${campos(p).includes('proyecto') ? `<div class="f s4"><span class="lbl">Proyecto (texto de la ficha)</span><div class="zona">${esc(p.proyectoTxt)}</div></div>` : ''}
       <div class="f s4"><span class="lbl">Frentes de trabajo (${I.frentes.length} de ${MAX_FRENTES})</span>
@@ -1786,7 +2045,7 @@ function renderHdr(open) {
           <input value="${esc(f.nombre)}" placeholder="Ej. CI-16AN" maxlength="60" aria-label="Nombre del frente ${i + 1}" data-act="fname" data-f="${esc(f.id)}" autocomplete="off">
           ${I.frentes.length > 1 ? `<button data-act="delf" data-f="${esc(f.id)}" title="Quitar frente" aria-label="Quitar frente">×</button>` : ''}</div>`).join('')}
           ${I.frentes.length < MAX_FRENTES ? `<button class="btn" data-act="addf">+ Agregar frente</button>` : ''}</div></div>
-      ${campos(p).includes('zona') ? `<div class="f s2"><span class="lbl">Zona / área</span><div class="zona" id="zona">${esc(zona(I)) || '<span class="hint">Se completa con los nombres de los frentes</span>'}</div></div>` : ''}
+      ${campos(p).includes('zona') ? `<div class="f s2"><span class="lbl">${esc(((p.labels || {}).zona || 'Zona / área').replace(/:$/, ''))}</span><div class="zona" id="zona">${esc(zona(I)) || '<span class="hint">Se completa con los nombres de los frentes</span>'}</div></div>` : ''}
       <div class="f s2"><span class="lbl">Firma</span>
         <label class="chk"><input type="checkbox" data-act="usarfirma" ${I.usarFirma && A.firma ? 'checked' : ''} ${A.firma ? '' : 'disabled'}> Colocar mi firma en el PDF</label>
         ${A.firma ? '' : '<span class="hint">Carga tu firma en Ajustes (⚙) para poder colocarla.</span>'}</div>
@@ -1897,7 +2156,7 @@ function renderProgs() {
     }
     html += `<section class="card prog ${open ? 'open' : ''}" id="prog-${pi}">
       <button class="ph" data-act="toggle" data-pi="${pi}">${ICON.chev}
-        <span class="pn">${hl(pr.nombre)}<small>${pr.medidas.length} medidas</small></span>
+        <span class="pn">${pr.num ? esc(pr.num) + " · " : ""}${hl(pr.nombre)}<small>${pr.medidas.length} medidas</small></span>
         <span class="badges" id="pb-${pi}">${progBadges(pi)}</span></button>
       <div class="pb">${body}</div></section>`;
   });
@@ -2096,7 +2355,7 @@ async function annotate(id) {
 function validar() {
   const I = S.insp, p = proj(I), errs = [], warns = [];
   if (!I.fecha) errs.push({ t: 'Falta la fecha de la inspección.', go: 'hdr' });
-  if (!I.inspectores.length) errs.push({ t: 'Falta indicar quién realizó la inspección.', go: 'hdr' });
+  if (campos(p).includes('inspectores') && !I.inspectores.length) errs.push({ t: 'Falta indicar quién realizó la inspección.', go: 'hdr' });
   if (!clean(I.contratista)) errs.push({ t: 'Falta el contratista.', go: 'hdr' });
   const names = I.frentes.map(f => clean(f.nombre).toUpperCase());   // la comparación de repetidos no distingue mayúsculas
   names.forEach((n, i) => { if (!n) errs.push({ t: `El frente ${i + 1} no tiene nombre.`, go: 'hdr' }); });
@@ -2232,7 +2491,7 @@ function sanitizar(data) {
     id: typeof raw.id === 'string' && SAFE_ID.test(raw.id) ? raw.id : uid('i'),
     projectId: p.id, fecha: /^\d{4}-\d{2}-\d{2}$/.test(raw.fecha) ? raw.fecha : '',
     inspectores: strs(raw.inspectores, 120), acompanamiento: strs(raw.acompanamiento, 120),
-    contratista: clean(str(raw.contratista, 200)), frentes, answers, obs, prefill,
+    contratista: clean(str(raw.contratista, 200)), frentes, answers, obs, prefill, obsAdic: str(raw.obsAdic, 8000),
     prefillKeys: Array.isArray(raw.prefillKeys) ? raw.prefillKeys.filter(k => keysOf(p).includes(k)) : [],
     usarFirma: raw.usarFirma !== false, prefillDesde: /^\d{4}-\d{2}-\d{2}$/.test(raw.prefillDesde) ? raw.prefillDesde : null,
     creado: +raw.creado || Date.now(), actualizado: +raw.actualizado || Date.now(),
@@ -2368,7 +2627,8 @@ async function construirPDF(I) {
   doc.setProperties({ title: fileBase(I), subject: p.titulo, creator: 'Vigía - Desarrollada por Ricardo Espino G.' });
   doc.setLineCap('round');
   doc.avisos = [];
-  const colHdr = p.colorEncabezado === 'claro' ? PC.light : PC.blue;
+  const colHdr = p.colorEncabezado === 'claro' ? PC.light : p.colorEncabezado === 'blanco' ? null : PC.blue;
+  const colProg = p.colorPrograma === 'gris' ? PC.gray : PC.blue;
 
   // Columnas
   const cNum = 22, cSub = 20;
@@ -2416,30 +2676,49 @@ async function construirPDF(I) {
   const closeTable = yb => { doc.setDrawColor(0); doc.setLineWidth(1.3); doc.rect(X0, tableTop, W, yb - tableTop, 'S'); doc.setLineWidth(0.5); };
 
   /* --- Encabezado del documento (página 1) --- */
-  const hH = 52, cLogo = 100, cCod = 128, hb = p.encabezadoBold ? 'bold' : 'normal';
+  const hH = p.tituloBloque ? 62 : 52, cLogo = 100, cCod = 128, hb = p.encabezadoBold ? 'bold' : 'normal';
   cell(X0, y, cLogo, hH);
-  doc.addImage(LOGO, 'PNG', X0 + (cLogo - 60) / 2, y + 5, 60, 45);
-  cell(X0 + cLogo, y, W - cLogo - cCod, 16);
-  ctext(p.titulo, X0 + cLogo, y, W - cLogo - cCod, 16, hb, 8);
-  cell(X0 + cLogo, y + 16, W - cLogo - cCod, hH - 16);
-  font(hb, 7.6);
-  const sv = doc.splitTextToSize(pdfTxt(p.subtitulo), W - cLogo - cCod - 30);
-  const svY = y + 16 + (hH - 16) / 2 - (sv.length - 1) * 4.6 + 2.6;
-  sv.forEach((l, i) => doc.text(l, X0 + cLogo + (W - cLogo - cCod) / 2, svY + i * 9.2, { align: 'center' }));
+  doc.addImage(LOGO, 'PNG', X0 + (cLogo - 60) / 2, y + (hH - 45) / 2, 60, 45);
+  if (p.tituloBloque) {
+    // Encabezado de un solo bloque (varias líneas centradas), como la ficha original del proyecto
+    cell(X0 + cLogo, y, W - cLogo - cCod, hH);
+    const tb = p.tituloBloque.map((t, i) => { const last = i === p.tituloBloque.length - 1; font(hb, last ? 7.2 : 7.8); return doc.splitTextToSize(pdfTxt(t), W - cLogo - cCod - 16).map(l => ({ l, last })); }).flat();
+    const lh = 9.4, ty0 = y + hH / 2 - (tb.length - 1) * lh / 2 + 2.8;
+    tb.forEach((o, i) => { font(hb, o.last ? 7.2 : 7.8); doc.text(o.l, X0 + cLogo + (W - cLogo - cCod) / 2, ty0 + i * lh, { align: 'center' }); });
+  } else {
+    cell(X0 + cLogo, y, W - cLogo - cCod, 16);
+    ctext(p.titulo, X0 + cLogo, y, W - cLogo - cCod, 16, hb, 8);
+    cell(X0 + cLogo, y + 16, W - cLogo - cCod, hH - 16);
+    font(hb, 7.6);
+    const sv = doc.splitTextToSize(pdfTxt(p.subtitulo), W - cLogo - cCod - 30);
+    const svY = y + 16 + (hH - 16) / 2 - (sv.length - 1) * 4.6 + 2.6;
+    sv.forEach((l, i) => doc.text(l, X0 + cLogo + (W - cLogo - cCod) / 2, svY + i * 9.2, { align: 'center' }));
+  }
   cell(XR - cCod, y, cCod, hH);
   font(hb, 7.8);
-  [p.codigoTxt || `Código: ${p.codigo}`, `Edición: ${p.edicion}`, `Vigencia: ${p.vigencia}`].forEach((l, i) => doc.text(pdfTxt(l), XR - cCod + 3, y + 15 + i * 11));
+  const cy0 = p.tituloBloque ? y + hH / 2 - 8 : y + 15;
+  [p.codigoTxt || `Código: ${p.codigo}`, `Edición: ${p.edicion}`, `${p.vigenciaLbl || 'Vigencia'}: ${p.vigencia}`].forEach((l, i) => doc.text(pdfTxt(l), XR - cCod + 3, cy0 + i * 11));
   y += hH;
+  if (p.banda) { cell(X0, y, W, 15, PC.gray); ctext(p.banda, X0, y, W, 15, 'bold', 6.8); y += 15; }
 
   const VAL = { inspectores: I.inspectores.join(', '), zona: zona(I), fecha: fechaCorta(I.fecha), proyecto: p.proyectoTxt || '', contratista: I.contratista, acompanamiento: (I.acompanamiento || []).join(', ') };
   const vb = p.valoresBold ? 'bold' : 'normal';
-  campos(p).forEach(c => {
+  const lblOf = c => (p.labels || {})[c] || LABELS[c];
+  if (p.camposEnLinea) campos(p).forEach(c => {
+    // "Etiqueta: valor" en una sola celda de ancho completo
+    const runs = [{ t: lblOf(c) + ' ', b: true }, { t: VAL[c] || '', b: vb === 'bold' }];
+    const L = wrapRich(runs, 6.6, W - 6), h = Math.max(13, L.length * 7.8 + 5);
+    cell(X0, y, W, h); drawRich(L, X0 + 3, y + h / 2 - (L.length - 1) * 3.9 + 2.3, 6.6, 7.8);
+    y += h;
+  });
+  else campos(p).forEach(c => {
+    const cL = p.etiquetaW || cLogo;   // ancho de la columna de etiquetas
     font(vb, 6.4);
-    const vl = doc.splitTextToSize(pdfTxt(VAL[c]), W - cLogo - 6);
+    const vl = doc.splitTextToSize(pdfTxt(VAL[c]), W - cL - 6);
     const h = Math.max(13, vl.length * 7.6 + 5);
-    cell(X0, y, cLogo, h); ctext(LABELS[c], X0, y, cLogo, h, 'bold', 7, 'left');
-    cell(X0 + cLogo, y, W - cLogo, h);
-    font(vb, 6.4); vl.forEach((t, i) => doc.text(t, X0 + cLogo + 3, y + h / 2 - (vl.length - 1) * 3.8 + 2.2 + i * 7.6));
+    cell(X0, y, cL, h); ctext(lblOf(c), X0, y, cL, h, 'bold', 7, 'left');
+    cell(X0 + cL, y, W - cL, h);
+    font(vb, 6.4); vl.forEach((t, i) => doc.text(t, X0 + cL + 3, y + h / 2 - (vl.length - 1) * 3.8 + 2.2 + i * 7.6));
     y += h;
   });
 
@@ -2466,9 +2745,9 @@ async function construirPDF(I) {
       cell(subX(fi, 0), y, 3 * cSub, h1, colHdr);
       font('bold', hsz); const L = flines[fi], lh = hsz * 1.15;
       L.forEach((l, i) => doc.text(l, subX(fi, 0) + 1.5 * cSub, y + h1 / 2 - (L.length - 1) * lh / 2 + hsz * 0.35 + i * lh, { align: 'center' }));
-      ['Si', 'No', 'N/A'].forEach((t, j) => { cell(subX(fi, j), y + h1, cSub, h2, colHdr); ctext(t, subX(fi, j), y + h1, cSub, h2, 'bold', 6.1); });
+      (p.colSN || ['Si', 'No', 'N/A']).forEach((t, j) => { cell(subX(fi, j), y + h1, cSub, h2, colHdr); ctext(t, subX(fi, j), y + h1, cSub, h2, 'bold', 6.1); });
     });
-    cell(xObs, y, XR - xObs, HH, colHdr); ctext('Observaciones', xObs, y, XR - xObs, HH, 'bold', 6.8);
+    cell(xObs, y, XR - xObs, HH, colHdr); ctext(p.obsTxt || 'Observaciones', xObs, y, XR - xObs, HH, 'bold', 6.8);
     y += HH;
   };
   const newPage = () => { closeTable(y); doc.addPage([PW, PH], 'portrait'); y = M; tableTop = M; colHeader(); };
@@ -2522,7 +2801,8 @@ async function construirPDF(I) {
     // El título del programa no se queda solo al final de una página
     const lead = BAND + (pr.subs[0] != null ? SUBH : 0) + Math.min(rows[0].h, 40);
     if (y + lead > BOT) newPage();
-    band(pr.nombre, BAND, PC.blue, 'bold', 6.9);
+    if (pr.num) { cell(X0, y, cNum, BAND, colProg); ctext(pr.num, X0, y, cNum, BAND, 'bold', 6.9); cell(xAct, y, W - cNum, BAND, colProg); ctext(pr.nombre, xAct, y, W - cNum, BAND, 'bold', 6.9, 'left'); y += BAND; }
+    else band(pr.nombre, BAND, colProg, 'bold', 6.9);
     rows.forEach((r, mi) => {
       if (pr.subs[mi] != null) {
         if (y + SUBH + Math.min(r.h, 40) > BOT) newPage();
@@ -2617,11 +2897,25 @@ async function construirPDF(I) {
     }
   }
 
+  /* --- Observaciones adicionales (solo si se escribieron) --- */
+  const adic = String(I.obsAdic || '').replace(/\r/g, '').trim();
+  if (adic) {
+    const AS = 7.2, ALH = 9.4;
+    font('normal', AS);
+    const lines = adic.split('\n').flatMap(par => par.trim() ? doc.splitTextToSize(pdfTxt(par.trim()), W - 8) : ['']);
+    if (y + 24 + ALH * Math.min(3, lines.length) > BOT) { doc.addPage([PW, PH], 'portrait'); y = M; }
+    y += 18; font('bold', 7.8); doc.text(pdfTxt('Observaciones adicionales'), X0, y); y += 4;
+    lines.forEach(l => {
+      if (y + ALH > BOT) { doc.addPage([PW, PH], 'portrait'); y = M; }
+      y += ALH; font('normal', AS); if (l) doc.text(l, X0 + 4, y);
+    });
+  }
+
   /* --- Pie de página --- */
   const n = doc.getNumberOfPages();
   for (let i = 1; i <= n; i++) {
     doc.setPage(i); font('normal', 8.5); doc.setTextColor(30);
-    doc.text(pdfTxt(`Página ${i} de ${n} – ${p.codigo} FCSA ${p.nombre}`), PW / 2, PH - 22, { align: 'center' });
+    doc.text(pdfTxt(`Página ${i} de ${n} – ${p.codigo} FCSA ${p.sigla || p.nombre}`), PW / 2, PH - 22, { align: 'center' });
     doc.setTextColor(0);
   }
   return doc;
@@ -2639,11 +2933,12 @@ function iniciarPDF() {
       ${warns.length ? `<p class="mb-12 hint">Hay ${warns.length} punto${warns.length === 1 ? '' : 's'} para revisar que no impiden generar el PDF. <button class="btn sm ghost" id="g-warn">Ver</button></p>` : ''}
       <label class="chk"><input type="checkbox" id="g-firma" ${I.usarFirma && A.firma ? 'checked' : ''} ${A.firma ? '' : 'disabled'}> Colocar mi firma</label>
       ${A.firma ? '' : '<p class="m0 hint">Para colocar la firma, cárgala en Ajustes (⚙).</p>'}
-      ${nf ? `<p class="mt-12"><button class="btn" id="g-ord">Ordenar fotos</button></p>` : ''}`,
+      <p class="mt-12 row-btns">${nf ? `<button class="btn" id="g-ord">Ordenar fotos</button>` : ''}<button class="btn" id="g-adic">${obsAdicLbl(I)}</button></p>`,
     foot: `<button class="btn" id="g-prev">Vista previa</button><button class="btn pri" id="g-dl">Descargar PDF</button>`,
     onMount: (ov, close) => {
       const gw = $('#g-warn', ov); if (gw) gw.onclick = () => { close(); dlgValidar(false); };
       const go = $('#g-ord', ov); if (go) go.onclick = () => { close(); dlgOrdenar(); };
+      $('#g-adic', ov).onclick = () => { close(); dlgObsAdic(iniciarPDF); };
       $('#g-firma', ov).onchange = e => { I.usarFirma = e.target.checked; touch(); };
       const run = async (prev, btn) => {
         // La ventana de vista previa se abre en el mismo toque (si no, el navegador la bloquea)
@@ -2660,6 +2955,26 @@ function iniciarPDF() {
       };
       $('#g-prev', ov).onclick = e => run(true, e.currentTarget);
       $('#g-dl', ov).onclick = e => run(false, e.currentTarget);
+    },
+  });
+}
+
+/* Observaciones adicionales: texto libre que va al final del PDF, después de las fotos */
+const obsAdicLbl = I => 'Observaciones adicionales' + (clean(I.obsAdic) ? ' ✓' : '');
+function dlgObsAdic(despues) {
+  const I = S.insp;
+  modal({
+    title: 'Observaciones adicionales',
+    body: `<p class="mb-12 hint">Comentarios u observaciones que no corresponden a una medida. Salen al final del PDF, después de las fotos, con el título “Observaciones adicionales”. Si lo dejas vacío, esa parte no aparece.</p>
+      <textarea class="in-t oa-t" id="oa-t" maxlength="8000" rows="9" aria-label="Observaciones adicionales" placeholder="Ej. 1. Se evidenció…">${esc(I.obsAdic || '')}</textarea>`,
+    foot: `<button class="btn" data-x>Cancelar</button><button class="btn pri" id="oa-ok">Guardar</button>`,
+    onMount: (ov, close) => {
+      $('#oa-ok', ov).onclick = async () => {
+        I.obsAdic = $('#oa-t', ov).value.replace(/\s+$/, ''); touch(); await flush(); close();
+        $$('[data-act="obsadic"]').forEach(b => b.textContent = obsAdicLbl(I));
+        toast(clean(I.obsAdic) ? 'Observaciones adicionales guardadas' : 'Sin observaciones adicionales');
+        if (despues) despues();
+      };
     },
   });
 }
@@ -3171,6 +3486,7 @@ document.addEventListener('click', async e => {
     case 'delf': delFrente(d.f); break;
     case 'validar': dlgValidar(false); break;
     case 'pdf': iniciarPDF(); break;
+    case 'obsadic': dlgObsAdic(); break;
     case 'ind': await flush(); S.list = await DB.all('inspecciones'); renderInd(); window.scrollTo(0, 0); break;
     case 'ind-resp': dlgRespProyecto(S.ind.projectId); break;
     case 'ind-pdf': case 'ind-xlsx': {
