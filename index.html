@@ -256,7 +256,7 @@ h2{font-size:var(--fs-lg);margin:0 0 12px;color:var(--pri)}
 .sett h3{font-size:var(--fs-md);margin:18px 0 8px;color:var(--pri)}
 .sett h3:first-child{margin-top:0}
 .slist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.slist li{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r-md);font-size:var(--fs-md)}
+.slist li{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r-md);font-size:var(--fs-md)}
 .slist li span{flex:1}
 .firma{max-height:90px;max-width:260px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-md);padding:4px}
 
@@ -348,6 +348,16 @@ table.imap{border-collapse:collapse;width:100%;font-size:var(--fs-sm)}
   .md-b{padding:16px}
 }
 
+/* Aviso de ficha del mes y tabla mensual */
+.aviso-mes{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;margin-bottom:12px;background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.aviso-mes b{display:block;color:var(--warn)}
+.aviso-mes .row{display:flex;gap:8px;align-items:center}
+.ind-per .cita{flex-basis:100%;font-size:var(--fs-xs)}
+.tmes td,.tmes th{vertical-align:middle}
+.imap.tmes tbody th{min-width:0;position:static;white-space:nowrap}
+.tmes .fm{display:inline-block;margin:2px 12px 2px 0;white-space:nowrap}
+.tmes tr.flash td,.tmes tr.flash th{background:var(--pri-soft)}
+.trend circle[data-mes]{cursor:pointer}
 /* Etiqueta que puede partirse en dos líneas */
 .pill.wrap{white-space:normal;max-width:100%}
 /* Utilidades de margen */
@@ -1101,9 +1111,10 @@ const CATALOG = [
 const LOGO = 'data:image/png;base64,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';
 const VIGIA = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20160%20160%22%3E%3Crect%20width%3D%22160%22%20height%3D%22160%22%20rx%3D%2236%22%20fill%3D%22%231c1f86%22/%3E%3Cpath%20d%3D%22M20%2080%20C44%2044%20116%2044%20140%2080%20C116%20116%2044%20116%2020%2080%20Z%22%20fill%3D%22%23ffffff%22/%3E%3Ccircle%20cx%3D%2280%22%20cy%3D%2280%22%20r%3D%2227%22%20fill%3D%22%2347b8f5%22/%3E%3Cpath%20d%3D%22M67%2095%20C64%2074%2077%2063%2097%2063%20C97%2084%2086%2095%2067%2095%20Z%22%20fill%3D%22%232bb673%22/%3E%3Cpath%20d%3D%22M69%2093%20L93%2067%22%20stroke%3D%22%231c1f86%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Ccircle%20cx%3D%2271%22%20cy%3D%2269%22%20r%3D%224%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E';  // Logo de Vigía (ojo con iris de hoja)
 const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.01-1016';
+const APP_VERSION = '2026.11.02-0917';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1170,7 +1181,8 @@ const DB = {
 };
 
 /* Ajustes guardados en el dispositivo */
-const A = { inspectores: [], acompanantes: [], obsLib: [], firma: null, usarFirma: true, contratistas: {} };
+const A = { inspectores: [], acompanantes: [], obsLib: [], firma: null, usarFirma: true, contratistas: {}, inactivos: [], avisoOculto: {} };
+const activo = pid => !(A.inactivos || []).includes(pid);
 async function loadAjustes() {
   const rows = await DB.all('ajustes');
   rows.forEach(r => { A[r.k] = r.v; });
@@ -1413,8 +1425,16 @@ function topbar(mode) {
     <button class="btn ghost icon" data-act="ajustes" title="Ajustes" aria-label="Ajustes">${ICON.gear}</button></div></header>`;
 }
 
+/* Aviso de ficha del mes: desde el día 20, proyecto activo sin ficha del mes en curso (fecha del reloj del dispositivo) */
+function avisosMes() {
+  const hoy = new Date(); if (hoy.getDate() < 20) return [];
+  const mes = ym(hoy), oc = A.avisoOculto || {};
+  return CATALOG.filter(p => activo(p.id) && oc[p.id] !== mes && !S.list.some(i => i && i.projectId === p.id && (i.fecha || '').slice(0, 7) === mes))
+    .map(p => ({ p, mes, nombreMes: MESES_L[hoy.getMonth()] }));
+}
 function renderHome() {
   S.view = 'home'; S.insp = null; S.fotos = [];
+  const avisos = avisosMes();
   const list = [...S.list].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
   const cards = list.map(I => {
     try {
@@ -1443,18 +1463,23 @@ function renderHome() {
       <div class="row"><button class="btn pri" data-act="nueva">+ Nueva ficha</button>
       <button class="btn" data-act="ind">Indicadores</button>
       <span class="btn upl">Importar respaldo<input type="file" accept=".json,application/json" data-act="importar" aria-label="Importar respaldo"></span></div></section>
+    ${avisos.map(a => `<section class="card aviso-mes" role="status"><div><b>${esc(a.p.nombre)}: aún no hay ficha de ${a.nombreMes}.</b><span class="hint">Las fichas de control se levantan cada mes.</span></div>
+      <div class="row"><button class="btn pri sm" data-act="nueva" data-p="${esc(a.p.id)}">+ Nueva ficha</button><button class="btn xs" data-act="ocultar-aviso" data-p="${esc(a.p.id)}" data-mes="${a.mes}">Ocultar este mes</button></div></section>`).join('')}
     ${list.length ? `<section class="ilist">${cards}</section>` : `<section class="card empty">Todavía no hay fichas guardadas en este dispositivo.<br>Toca <b>+ Nueva ficha</b> para comenzar.</section>`}
     ${installEvt && !instalada() ? `<section class="card hero"><div><h1 style="font-size:var(--fs-lg)">Instala Vigía en este dispositivo</h1><p>Queda en la pantalla de inicio y funciona sin internet en campo.</p></div><div class="row"><button class="btn pri" data-act="instalar">Instalar app</button></div></section>` : ''}
     <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía · Desarrollada por <b>Ricardo Espino G.</b></p>
   </main>`;
 }
 
-function dlgNueva() {
+function dlgNueva(pre) {
+  const lista = CATALOG.filter(p => activo(p.id) || p.id === pre);
+  const opts = (lista.length ? lista : CATALOG);
   const today = new Date(); const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   modal({
     title: 'Nueva ficha',
     body: `<div class="hgrid" style="grid-template-columns:1fr;margin-top:0">
-      <label class="f"><span class="lbl">Proyecto</span><select class="in-t" id="np">${CATALOG.map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('')}</select></label>
+      <label class="f"><span class="lbl">Proyecto</span><select class="in-t" id="np">${opts.map(p => `<option value="${p.id}" ${p.id === pre ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>
+      ${lista.length < CATALOG.length ? `<p class="m0 hint">${CATALOG.length - lista.length} proyecto${CATALOG.length - lista.length === 1 ? '' : 's'} inactivo${CATALOG.length - lista.length === 1 ? '' : 's'} no aparece${CATALOG.length - lista.length === 1 ? '' : 'n'} aquí. Actívalo${CATALOG.length - lista.length === 1 ? '' : 's'} en Ajustes.</p>` : ''}
       <label class="f"><span class="lbl">Fecha de la inspección</span><input type="date" class="in-t" id="nf" value="${iso}"></label>
       <p class="m0 hint">Las medidas que fueron N/A en todos los frentes de la ficha anterior se precargan como N/A y quedan resaltadas para que las confirmes.</p></div>`,
     foot: `<button class="btn" data-x>Cancelar</button><button class="btn pri" id="nok">Crear ficha</button>`,
@@ -2064,6 +2089,9 @@ function dlgAjustes() {
       <span class="btn sm upl">${A.firma ? 'Cambiar firma' : 'Cargar firma'}<input type="file" accept="image/*" id="s-firma" aria-label="Cargar imagen de firma"></span>
       ${A.firma ? '<button class="btn sm danger" id="s-delfirma">Quitar firma</button>' : ''}</div>
     <label class="chk"><input type="checkbox" id="s-usar" ${A.usarFirma ? 'checked' : ''}> Colocar la firma por defecto en las fichas nuevas</label>
+    <h3>Proyectos</h3>
+    <p class="mb-8 hint">Un proyecto inactivo no aparece en “Nueva ficha” ni da el aviso de ficha del mes. Sus fichas e indicadores siguen disponibles.</p>
+    <ul class="slist">${CATALOG.map(p => `<li><span>${esc(p.nombre)} <span class="hint">· ${esc(p.codigo)}</span></span><label class="chk sw"><input type="checkbox" data-pa="${esc(p.id)}" ${activo(p.id) ? 'checked' : ''}> Activo</label></li>`).join('')}</ul>
     <h3>Inspectores (${A.inspectores.length})</h3>
     ${A.inspectores.length ? `<ul class="slist">${A.inspectores.map((n, i) => `<li><span>${esc(n)}</span><button class="btn sm ghost" data-di="${i}">Quitar</button></li>`).join('')}</ul>` : '<p class="hint">Se guardan al agregarlas en una ficha.</p>'}
     <h3>Acompañamiento (${A.acompanantes.length})</h3>
@@ -2094,6 +2122,7 @@ function dlgAjustes() {
         };
         const df = $('#s-delfirma', ov); if (df) df.onclick = async () => { A.firma = null; await saveAjuste('firma'); paint(); };
         $('#s-usar', ov).onchange = e => { A.usarFirma = e.target.checked; saveAjuste('usarFirma'); };
+        $$('[data-pa]', ov).forEach(b => b.onchange = () => { const id = b.dataset.pa, set = new Set(A.inactivos || []); b.checked ? set.delete(id) : set.add(id); A.inactivos = [...set]; saveAjuste('inactivos'); });
         $$('[data-di]', ov).forEach(b => b.onclick = () => { A.inspectores.splice(+b.dataset.di, 1); saveAjuste('inspectores'); paint(); });
         $$('[data-da]', ov).forEach(b => b.onclick = () => { A.acompanantes.splice(+b.dataset.da, 1); saveAjuste('acompanantes'); paint(); });
         $$('[data-do]', ov).forEach(b => b.onclick = () => { A.obsLib = A.obsLib.filter(o => o.text !== b.dataset.do); saveAjuste('obsLib'); paint(); });
@@ -2108,7 +2137,7 @@ function dlgAjustes() {
         } catch {}
       })();
     },
-    onClose: () => { if (S.view === 'edit') refreshHdr(); },
+    onClose: () => { if (S.view === 'edit') refreshHdr(); else if (S.view === 'home') renderHome(); },
   });
 }
 
@@ -2493,6 +2522,12 @@ function nivel(v) {
   return { k: 'bad', t: 'No cumple' };
 }
 const chipLv = v => { const n = nivel(v); return n ? `<span class="chip-lv ${n.k}">${n.t}</span>` : ''; };
+/* Semáforo del cumplimiento MENSUAL, con los términos del PA-03 Control y Seguimiento Ambiental:
+   §6.2 (p. 3) satisfactorio = no menor al 90 % · §6.3 (p. 5) bajo 90 % requiere plan de acción · §6.3 (p. 6) bajo 80 % = incumplimiento mayor */
+const NIV_MES = { ok: 'Satisfactorio', warn: 'Requiere plan de acción', bad: 'Incumplimiento mayor' };
+function nivelMes(v) { const n = nivel(v); return n ? { k: n.k, t: NIV_MES[n.k] } : null; }
+const chipMes = v => { const n = nivelMes(v); return n ? `<span class="chip-lv ${n.k}">${n.t}</span>` : ''; };
+const PA03_CITA = 'Criterio según PA-03 Control y Seguimiento Ambiental, §6.2 (p. 3) y §6.3 (pp. 5–6)';
 
 /* Una ficha cuenta en los indicadores solo si está completa */
 function completa(I) {
@@ -2541,33 +2576,37 @@ function datosInd(pid, per) {
     rec.push({ k, m, veces: occ.length, racha: best, occ, ultimaSigue: occ[occ.length - 1].idx === insp.length - 1 });
   });
   rec.sort((a, b) => (b.racha >= 2) - (a.racha >= 2) || b.racha - a.racha || b.veces - a.veces);
-  return { p, per, insp, inc, meses, mapa, ranking, rec, promedio: avg(insp.map(x => x.total)), ultima: insp[insp.length - 1] || null };
+  // Cumplimiento mensual = promedio de las fichas completas del mes (PA-03 §6.3 evalúa el promedio mensual)
+  const mensual = meses.map(m => { const xs = insp.filter(x => x.mes === m); return { mes: m, lbl: mesLbl(m), fichas: xs, v: avg(xs.map(x => x.total)) }; }).filter(x => x.fichas.length);
+  return { p, per, insp, inc, meses, mapa, ranking, rec, mensual, promedio: avg(mensual.map(x => x.v)), ultimoMes: mensual[mensual.length - 1] || null, ultima: insp[insp.length - 1] || null };
 }
 
 /* Gráfico de tendencia (SVG, también se usa en el PDF) */
 function trendSVG(d, W = 960, H = 320, P = TREND_LIGHT) {
   const L = 48, R = 18, T = 18, B = 46, w = W - L - R, h = H - T - B;
-  if (!d.insp.length) return '';
-  const vals = d.insp.map(x => x.total).filter(v => v != null);
+  const serie = d.mensual;
+  if (!serie.length) return '';
+  const vals = serie.map(x => x.v).filter(v => v != null);
   const minV = vals.length ? Math.min(...vals) : 1;
   const y0 = Math.max(0, Math.min(60, Math.floor((minV * 100 - 5) / 10) * 10));
   const Y = v => T + h - (v * 100 - y0) / (100 - y0) * h;
-  const n = d.insp.length, PADX = 36, X = i => L + (n === 1 ? w / 2 : PADX + i * (w - 2 * PADX) / (n - 1));
+  const n = serie.length, PADX = 36, X = i => L + (n === 1 ? w / 2 : PADX + i * (w - 2 * PADX) / (n - 1));
   const band = (a, b, c) => { const ya = Y(Math.max(a, y0 / 100)), yb = Y(b); return yb < ya ? `<rect x="${L}" y="${yb}" width="${w}" height="${ya - yb}" fill="${c}"/>` : ''; };
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Tendencia del cumplimiento total por inspección" font-family="Helvetica, Arial, sans-serif">`;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Tendencia del cumplimiento mensual" font-family="Helvetica, Arial, sans-serif">`;
   s += `<rect x="0" y="0" width="${W}" height="${H}" fill="${P.bg}"/>`;
   s += band(0.9, 1, P.okBg) + band(0.8, 0.9, P.warnBg) + (y0 < 80 ? band(y0 / 100, 0.8, P.badBg) : '');
   for (let g = y0; g <= 100; g += 10) s += `<line x1="${L}" x2="${L + w}" y1="${Y(g / 100)}" y2="${Y(g / 100)}" stroke="${P.grid}" stroke-width="1"/><text x="${L - 8}" y="${Y(g / 100) + 4}" font-size="12" text-anchor="end" fill="${P.axis}">${g}%</text>`;
   s += `<line x1="${L}" x2="${L + w}" y1="${Y(0.9)}" y2="${Y(0.9)}" stroke="${P.meta}" stroke-width="1.6" stroke-dasharray="6 5"/><text x="${L + w}" y="${Y(0.9) - 6}" font-size="12" text-anchor="end" fill="${P.meta}" font-weight="700">Meta 90 %</text>`;
-  const pts = d.insp.map((x, i) => x.total == null ? null : [X(i), Y(x.total)]).filter(Boolean);
+  const pts = serie.map((x, i) => x.v == null ? null : [X(i), Y(x.v)]).filter(Boolean);
   if (pts.length > 1) s += `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${P.line}" stroke-width="2.5" stroke-linejoin="round"/>`;
   const step = Math.ceil(n / 14);
-  d.insp.forEach((x, i) => {
-    if (i % step === 0 || i === n - 1) s += `<text x="${X(i)}" y="${T + h + 20}" font-size="12" text-anchor="middle" fill="${P.axis}">${esc(x.lbl)}</text>`;
-    if (x.total == null) return;
-    const lv = nivel(x.total);
-    s += `<circle cx="${X(i)}" cy="${Y(x.total)}" r="6" fill="${P[lv.k]}" stroke="${P.ring}" stroke-width="2"><title>${esc(x.lbl)}: ${pctP(x.I, x.total)} · ${lv.t}</title></circle>`;
-    s += `<text x="${X(i)}" y="${Y(x.total) - 11}" font-size="12" font-weight="700" text-anchor="middle" fill="${P.label}">${esc(pctP(x.I, x.total))}</text>`;
+  const fake = { projectId: d.p.id };
+  serie.forEach((x, i) => {
+    if (i % step === 0 || i === n - 1) s += `<text x="${X(i)}" y="${T + h + 20}" font-size="12" text-anchor="middle" fill="${P.axis}">${esc(x.lbl)}${x.fichas.length > 1 ? ` (${x.fichas.length})` : ''}</text>`;
+    if (x.v == null) return;
+    const lv = nivelMes(x.v);
+    s += `<circle data-mes="${x.mes}" cx="${X(i)}" cy="${Y(x.v)}" r="7" fill="${P[lv.k]}" stroke="${P.ring}" stroke-width="2"><title>${esc(x.lbl)}: ${pctP(fake, x.v)} · ${lv.t} · ${x.fichas.length} ficha${x.fichas.length === 1 ? '' : 's'}</title></circle>`;
+    s += `<text x="${X(i)}" y="${Y(x.v) - 12}" font-size="12" font-weight="700" text-anchor="middle" fill="${P.label}">${esc(pctP(fake, x.v))}</text>`;
   });
   return s + '</svg>';
 }
@@ -2580,6 +2619,9 @@ function renderInd() {
   const pc = v => pctP(fake, v);
   const kpi = (lbl, val, extra = '') => `<div class="card kpi"><span>${lbl}</span><b>${val}</b>${extra}</div>`;
   const nRacha = d.rec.filter(r => r.racha >= 2).length;
+  const mesRows = d.mensual.map(x => `<tr id="mes-${x.mes}"><th scope="row">${esc(x.lbl)}</th>
+      <td>${x.fichas.map(f => `<span class="fm">${esc(fechaCorta(f.fecha))} · ${pc(f.total)}</span>`).join('')}</td>
+      <td class="c ${nivelMes(x.v) ? nivelMes(x.v).k : ''}"><b>${pc(x.v)}</b></td><td>${chipMes(x.v)}</td></tr>`).join('');
   const mapRows = p.programas.map((pr, pi) => `<tr><th scope="row">${esc(pr.nombre)}</th>${d.mapa[pi].map(c => {
     if (!c.n) return '<td class="c none">—</td>';
     if (c.v == null) return '<td class="c na">N/A</td>';
@@ -2609,16 +2651,19 @@ function renderInd() {
         <button class="btn sm" data-act="ind-resp">Respaldo del proyecto</button>
       </div>
     </section>
-    <p class="hint ind-per">${esc(per.txt)} · Criterio: <span class="chip-lv ok">Cumple ≥ 90 %</span> <span class="chip-lv warn">En alerta 80–89 %</span> <span class="chip-lv bad">No cumple ≤ 79 %</span></p>
+    <div class="hint ind-per"><span>${esc(per.txt)} · Cumplimiento mensual:</span> <span class="chip-lv ok">Satisfactorio ≥ 90 %</span> <span class="chip-lv warn">Requiere plan de acción 80–89 %</span> <span class="chip-lv bad">Incumplimiento mayor &lt; 80 %</span>
+      <span class="cita">${esc(PA03_CITA)}. Cada ficha y programa usa Cumple / En alerta / No cumple con los mismos límites.</span></div>
     ${d.inc.length ? `<div class="card ind-warn">${d.inc.length} ficha${d.inc.length === 1 ? '' : 's'} del período no ${d.inc.length === 1 ? 'se incluye' : 'se incluyen'} porque ${d.inc.length === 1 ? 'está incompleta' : 'están incompletas'}: ${d.inc.map(I => { try { return esc(fileBase(I)); } catch { return 'ficha dañada'; } }).join(', ')}.</div>` : ''}
     ${!d.insp.length ? `<section class="card empty">No hay fichas completas de ${esc(p.nombre)} en este período.<br>Los indicadores aparecen cuando completes la primera ficha del proyecto.</section>` : `
     <section class="ind-grid">
-      ${kpi('Inspecciones', d.insp.length)}
-      ${kpi('Cumplimiento promedio', pc(d.promedio), chipLv(d.promedio))}
-      ${kpi('Última inspección', d.ultima ? pc(d.ultima.total) : '—', d.ultima ? `${chipLv(d.ultima.total)}<small>${esc(fechaLarga(d.ultima.fecha))}</small>` : '')}
+      ${kpi('Fichas', d.insp.length, `<small>${d.mensual.length} mes${d.mensual.length === 1 ? '' : 'es'} con ficha</small>`)}
+      ${kpi('Promedio del período', pc(d.promedio), `${chipMes(d.promedio)}<small>promedio de los meses</small>`)}
+      ${kpi('Último mes', d.ultimoMes ? pc(d.ultimoMes.v) : '—', d.ultimoMes ? `${chipMes(d.ultimoMes.v)}<small>${esc(MESES_L[+d.ultimoMes.mes.slice(5) - 1])} ${d.ultimoMes.mes.slice(0, 4)} · ${d.ultimoMes.fichas.length} ficha${d.ultimoMes.fichas.length === 1 ? '' : 's'}</small>` : '')}
       ${kpi('Medidas recurrentes', d.rec.length, nRacha ? `<small>${nRacha} en inspecciones consecutivas</small>` : '<small>ninguna consecutiva</small>')}
     </section>
-    <section class="card ind-sec"><h2>Tendencia del cumplimiento total</h2><div class="trend" tabindex="0" role="region" aria-label="Gráfica de tendencia (desplazable)">${trendSVG(d, 960, 320, trendTema())}</div></section>
+    <section class="card ind-sec"><h2>Cumplimiento mensual</h2><p class="mb-12 hint">Promedio de las fichas completas de cada mes. Toca un punto para ver sus fichas.</p>
+      <div class="trend" tabindex="0" role="region" aria-label="Gráfica del cumplimiento mensual (desplazable)">${trendSVG(d, 960, 320, trendTema())}</div>
+      <div class="mapwrap mt-12" tabindex="0" role="region" aria-label="Tabla del cumplimiento mensual (desplazable)"><table class="imap tmes"><thead><tr><th scope="col">Mes</th><th scope="col">Fichas del mes</th><th scope="col">Cumplimiento mensual</th><th scope="col">Semáforo</th></tr></thead><tbody>${mesRows}</tbody></table></div></section>
     <section class="card ind-sec"><h2>Cumplimiento por programa y mes</h2>
       <div class="mapwrap" tabindex="0" role="region" aria-label="Mapa de cumplimiento por programa y mes (desplazable)"><table class="imap"><thead><tr><th scope="col">Programa</th>${d.meses.map(m => `<th scope="col">${mesLbl(m)}</th>`).join('')}</tr></thead><tbody>${mapRows}</tbody></table></div>
       <p class="mt-8 hint">— sin inspección ese mes · N/A: todas las medidas del programa fueron N/A · “2 insp.”: promedio de dos inspecciones en el mes.</p></section>
@@ -2629,6 +2674,10 @@ function renderInd() {
     <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía · Desarrollada por <b>Ricardo Espino G.</b></p>
   </main>`;
   S.indData = d;
+  $$('.trend circle[data-mes]').forEach(c => c.addEventListener('click', () => {
+    const r = document.getElementById('mes-' + c.dataset.mes); if (!r) return;
+    r.scrollIntoView({ behavior: 'smooth', block: 'center' }); r.classList.add('flash'); setTimeout(() => r.classList.remove('flash'), 1700);
+  }));
 }
 
 /* ---------- PDF del panel ---------- */
@@ -2662,15 +2711,17 @@ async function pdfInd(d) {
   };
   const nueva = () => { doc.addPage('letter', 'landscape'); header(false); };
   const need = h => { if (y + h > BOT) nueva(); };
-  const chip = (v, x, yy) => { const n = nivel(v); if (!n) return; font('bold', 7.5); const tw = doc.getTextWidth(n.t) + 10; doc.setFillColor(...rgb(LV[n.k + 'Bg'])); doc.roundedRect(x, yy - 8, tw, 11, 5, 5, 'F'); doc.setTextColor(...rgb(LV[n.k])); doc.text(n.t, x + 5, yy); doc.setTextColor(0); return tw; };
+  const chip = (v, x, yy, mes) => { const n = mes ? nivelMes(v) : nivel(v); if (!n) return; font('bold', 7.5); const tw = doc.getTextWidth(n.t) + 10; doc.setFillColor(...rgb(LV[n.k + 'Bg'])); doc.roundedRect(x, yy - 8, tw, 11, 5, 5, 'F'); doc.setTextColor(...rgb(LV[n.k])); doc.text(n.t, x + 5, yy); doc.setTextColor(0); return tw; };
   header(true);
   // Criterio
-  font('normal', 8.5); doc.text(pdfTxt('Criterio (procedimiento del Programa): Cumple ≥ 90 % · En alerta 80–89 % · No cumple ≤ 79 %. Solo fichas completas.'), M, y); y += 14;
+  font('normal', 8.5); doc.splitTextToSize(pdfTxt('Cumplimiento mensual: Satisfactorio ≥ 90 % · Requiere plan de acción 80–89 % · Incumplimiento mayor < 80 %. Fichas y programas: Cumple / En alerta / No cumple, mismos límites. Solo fichas completas.'), W).forEach(l => { doc.text(l, M, y); y += 11; });
+  doc.setTextColor(90); doc.text(pdfTxt(PA03_CITA + '.'), M, y); doc.setTextColor(0); y += 14;
   if (d.inc.length) { doc.setTextColor(150, 90, 0); doc.text(pdfTxt(`${d.inc.length} ficha(s) incompleta(s) del período no se incluyen.`), M, y); doc.setTextColor(0); y += 14; }
   // KPIs
   const kw = (W - 3 * 10) / 4, kh = 48;
-  const kpis = [['Inspecciones', String(d.insp.length), null, ''], ['Cumplimiento promedio', pc(d.promedio), d.promedio, ''],
-    ['Última inspección', d.ultima ? pc(d.ultima.total) : '—', d.ultima ? d.ultima.total : null, d.ultima ? fechaCorta(d.ultima.fecha) : ''],
+  const um = d.ultimoMes;
+  const kpis = [['Fichas', String(d.insp.length), null, `${d.mensual.length} ${d.mensual.length === 1 ? 'mes' : 'meses'}`], ['Promedio del período', pc(d.promedio), d.promedio, ''],
+    ['Último mes', um ? pc(um.v) : '—', um ? um.v : null, um ? `${um.lbl} · ${um.fichas.length} ficha(s)` : ''],
     ['Medidas recurrentes', String(d.rec.length), null, `${d.rec.filter(r => r.racha >= 2).length} consecutivas`]];
   kpis.forEach(([l, v, lv, sub], i) => {
     const x = M + i * (kw + 10);
@@ -2678,17 +2729,34 @@ async function pdfInd(d) {
     font('normal', 8); doc.setTextColor(90); doc.text(pdfTxt(l), x + 10, y + 14); doc.setTextColor(0);
     font('bold', 18); doc.text(pdfTxt(v), x + 10, y + 36);
     const vw = doc.getTextWidth(pdfTxt(v));
-    if (lv != null) chip(lv, x + 18 + vw, y + 34);
+    if (lv != null) chip(lv, x + 18 + vw, y + 34, true);
     if (sub) { font('normal', 8); doc.setTextColor(90); doc.text(pdfTxt(sub), x + kw - 10, y + 14, { align: 'right' }); doc.setTextColor(0); }
   });
   y += kh + 18;
   // Tendencia
-  font('bold', 11); doc.text('Tendencia del cumplimiento total', M, y); y += 6;
+  font('bold', 11); doc.text('Cumplimiento mensual', M, y); y += 6;
   const th = Math.min(250, BOT - y);
   const png = await svgPng(trendSVG(d, 960, 320), 960, 320);
   doc.addImage(png, 'PNG', M, y, th * 3, th); y += th + 10;
-  // Mapa programa × mes
+  // Tabla del cumplimiento mensual
   nueva();
+  font('bold', 11); doc.text(pdfTxt('Cumplimiento mensual por mes'), M, y); y += 8;
+  const mc = [[0, 70, 'Mes'], [70, 330, 'Fichas del mes'], [400, 110, 'Cumplimiento mensual'], [510, W - 510, 'Semáforo']];
+  const mHead = () => { doc.setFillColor(217, 225, 242); doc.rect(M, y, W, 15, 'F'); font('bold', 7.5); mc.forEach(([x, w, t]) => doc.text(pdfTxt(t), M + x + 4, y + 10.5)); y += 15; };
+  mHead();
+  d.mensual.forEach(x => {
+    font('normal', 7.5); const fl = doc.splitTextToSize(pdfTxt(x.fichas.map(f => `${fechaCorta(f.fecha)}: ${pc(f.total)}`).join(' · ')), 320);
+    const h = Math.max(16, fl.length * 9 + 6);
+    if (y + h > BOT) { nueva(); mHead(); }
+    doc.setDrawColor(215); doc.setLineWidth(0.4); doc.rect(M, y, W, h, 'S');
+    font('bold', 8); doc.text(pdfTxt(x.lbl), M + 4, y + 11);
+    font('normal', 7.5); fl.forEach((l, i) => doc.text(l, M + 74, y + 11 + i * 9));
+    const n = nivelMes(x.v); if (n) { font('bold', 8.5); doc.setTextColor(...rgb(LV[n.k])); doc.text(pc(x.v), M + 404, y + 11); doc.setTextColor(0); chip(x.v, M + 514, y + 11, true); }
+    y += h;
+  });
+  y += 18;
+  // Mapa programa × mes
+  need(80);
   font('bold', 11); doc.text(pdfTxt('Cumplimiento por programa y mes'), M, y); y += 8;
   const c0 = 250, cw = (W - c0) / d.meses.length, RH0 = 16;
   const mapHead = () => { doc.setFillColor(217, 225, 242); doc.rect(M, y, W, RH0, 'F'); font('bold', 7.5); doc.text('Programa', M + 4, y + 11); d.meses.forEach((m, i) => doc.text(mesLbl(m), M + c0 + i * cw + cw / 2, y + 11, { align: 'center' })); y += RH0; };
@@ -2796,7 +2864,11 @@ function xlsxInd(d) {
   const mapa = [['Programa'].concat(d.meses.map(mesLbl))].concat(p.programas.map((pr, pi) => [pr.nombre].concat(d.mapa[pi].map(c => !c.n ? '' : c.v == null ? 'N/A' : { v: c.v, t: 'pct' }))));
   const rec = [['Programa', 'Medida N°', 'Medida', 'Inspecciones con "No"', 'Racha consecutiva', 'Se repite en la última ficha', 'Detalle']]
     .concat(d.rec.map(r => [r.m.prog, r.m.num, r.m.texto, r.veces, r.racha, r.ultimaSigue ? 'Sí' : 'No', r.occ.map(o => `${o.lbl}: ${o.fs.join(', ')}`).join(' | ')]));
-  const sheets = [['Resumen', hoja(resumen, [14, 12, 12, 40, 18, 12])], ['Por programa', hoja(prog, [14, 12, 24, 60, 22, 12])],
+  const nvm = v => (nivelMes(v) || {}).t || '';
+  const mensual = [['Mes', 'Fichas del mes', 'Fechas', 'Cumplimiento mensual', 'Semáforo (PA-03)']]
+    .concat(d.mensual.map(x => [x.lbl, x.fichas.length, x.fichas.map(f => fechaCorta(f.fecha)).join(', '), { v: x.v, t: 'pct' }, nvm(x.v)]))
+    .concat([[], ['Satisfactorio ≥ 90 % · Requiere plan de acción 80–89 % · Incumplimiento mayor < 80 %'], [PA03_CITA + '.']]);
+  const sheets = [['Cumplimiento mensual', hoja(mensual, [12, 14, 34, 22, 26])], ['Resumen', hoja(resumen, [14, 12, 12, 40, 18, 12])], ['Por programa', hoja(prog, [14, 12, 24, 60, 22, 12])],
     ['Mapa programa-mes', hoja(mapa, [60].concat(d.meses.map(() => 10)))], ['Recurrentes', hoja(rec, [40, 10, 70, 20, 16, 12, 60])]];
   const files = [
     ['[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
@@ -2871,7 +2943,8 @@ document.addEventListener('click', async e => {
     case 'theme': setTheme(getTheme() === 'dark' ? 'light' : 'dark'); S.view === 'ind' ? renderInd() : S.view === 'home' ? renderHome() : (() => { const tmp = document.createElement('div'); tmp.innerHTML = topbar('edit'); $('.top').replaceWith(tmp.firstElementChild); renderStrip(); })(); break;
     case 'ajustes': dlgAjustes(); break;
     case 'instalar': if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') installEvt = null; renderHome(); } break;
-    case 'nueva': dlgNueva(); break;
+    case 'nueva': dlgNueva(d.p); break;
+    case 'ocultar-aviso': A.avisoOculto = { ...(A.avisoOculto || {}), [d.p]: d.mes }; await saveAjuste('avisoOculto'); renderHome(); toast('Aviso oculto hasta el próximo mes'); break;
     case 'abrir': abrir(d.id); break;
     case 'home':
       if (S.busy) { toast('Espera: todavía se están guardando fotos.'); return; }
