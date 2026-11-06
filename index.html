@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-Ws3wNFX16TDUj/LYifZF0Sr4bJDxL5CcOJoij4MMDa8='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-+M6Zh+vE92DNaHD7a7JbNljIzUzMP8xXKL2YXYxsblQ='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
@@ -53,7 +53,8 @@ button{cursor:pointer}
 .top .tt b,.top .tt h1{font-size:var(--fs-base);color:var(--pri);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top .tt span{font-size:var(--fs-sm);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Nombre de la app más visible en la pantalla de inicio */
-.top .tt.brand b{font-size:26px;font-weight:800;line-height:1.05;letter-spacing:-.015em}
+/* line-height y overflow visibles para que no se corte la cola de la g */
+.top .tt.brand b{font-size:26px;font-weight:800;line-height:1.22;letter-spacing:-.015em;overflow:visible;padding-bottom:1px}
 .top:has(.tt.brand) img.vg{height:44px;width:44px}
 .top .tt.brand b .ver{font-size:var(--fs-sm);font-weight:600;color:var(--muted);letter-spacing:0;margin-left:4px;vertical-align:2px}
 @media (max-width:560px){.top .tt.brand b{font-size:var(--fs-xl)}.top:has(.tt.brand) img.vg{height:38px;width:38px}}
@@ -1704,8 +1705,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.06-1554';
-const APP_VER = '1.00';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.06-1600';
+const APP_VER = '1.01';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
