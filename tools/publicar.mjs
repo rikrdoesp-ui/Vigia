@@ -23,6 +23,7 @@ export const csp = h => [
   "img-src 'self' data: blob:",
   "manifest-src 'self'",
   "worker-src 'self'",
+  "frame-src blob:",            // solo la vista previa del PDF generado en el propio dispositivo
   "connect-src 'none'",
   "object-src 'none'",
   "base-uri 'none'",

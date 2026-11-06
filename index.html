@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-Wgogbl356jQ3jDKEhmLb7v2iDKNXNWtKTSJmzmF7iuM='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-WDuBQzvifGzl9YsMmkLgvf7vdZikiVa2Dkmp57hk/ac='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
@@ -272,6 +272,8 @@ h2{font-size:var(--fs-lg);margin:0 0 12px;color:var(--pri)}
 .ordit{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface2)}
 .ordit img{width:130px;height:98px;object-fit:cover;border-radius:var(--r-sm)}
 .ordit b{font-size:var(--fs-sm)}
+.md.wide .md-b:has(.pdfv){padding:0}
+.pdfv{display:block;width:100%;height:calc(100vh - 170px);min-height:320px;border:0;background:var(--stage-bg)}
 .credit{text-align:center;color:var(--muted);font-size:var(--fs-sm);margin:28px 0 12px}
 .lv-ok{color:var(--si)!important}.lv-warn{color:var(--warn)!important}.lv-bad{color:var(--no)!important}
 .mc .chip-lv{margin-top:2px;align-self:flex-start}
@@ -1517,7 +1519,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.06-1234';
+const APP_VERSION = '2026.11.06-1239';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -2953,13 +2955,16 @@ function iniciarPDF() {
       $('#g-adic', ov).onclick = () => { close(); dlgObsAdic(iniciarPDF); };
       $('#g-firma', ov).onchange = e => { I.usarFirma = e.target.checked; touch(); };
       const run = async (prev, btn) => {
-        // La ventana de vista previa se abre en el mismo toque (si no, el navegador la bloquea)
-        const win = prev ? window.open('', '_blank') : null;
+        // Si el navegador muestra PDF, la vista previa se abre dentro de Vigía (sin ventanas emergentes).
+        // Si no (p. ej. Chrome de Android), se intenta una pestaña nueva, que debe abrirse en el mismo toque.
+        const enApp = prev && navigator.pdfViewerEnabled === true;
+        const win = prev && !enApp ? window.open('', '_blank') : null;
         btn.disabled = true; const lbl = btn.textContent; btn.textContent = 'Generando…';
         try {
           await flush();
           const doc = await construirPDF(I);
-          if (prev && win) { win.location.href = doc.output('bloburl'); }
+          if (enApp) verPDF(doc.output('blob'), fileBase(I));
+          else if (prev && win) { win.location.href = doc.output('bloburl'); }
           else { download(doc.output('blob'), fileBase(I) + '.pdf'); toast(prev ? 'La vista previa fue bloqueada; se descargó el PDF.' : 'PDF descargado: ' + fileBase(I)); }
           if (doc.avisos.length) setTimeout(() => toast(doc.avisos.join(' ')), 2700);
         } catch (e) { if (win) win.close(); console.error(e); toast('No se pudo generar el PDF. Vuelve a intentarlo. Detalle: ' + e.message); }
@@ -2968,6 +2973,18 @@ function iniciarPDF() {
       $('#g-prev', ov).onclick = e => run(true, e.currentTarget);
       $('#g-dl', ov).onclick = e => run(false, e.currentTarget);
     },
+  });
+}
+
+/* Vista previa del PDF dentro de la app, con el visor de PDF del navegador */
+function verPDF(blob, nombre) {
+  const url = URL.createObjectURL(blob);
+  modal({
+    title: 'Vista previa · ' + esc(nombre), wide: true,
+    body: `<iframe class="pdfv" src="${url}" title="Vista previa del PDF ${esc(nombre)}"></iframe>`,
+    foot: `<button class="btn" data-x>Cerrar</button><button class="btn pri" id="v-dl">Descargar PDF</button>`,
+    onMount: (ov, close) => { $('#v-dl', ov).onclick = () => { download(blob, nombre + '.pdf'); toast('PDF descargado: ' + nombre); close(); }; },
+    onClose: () => setTimeout(() => URL.revokeObjectURL(url), 1000),
   });
 }
 
