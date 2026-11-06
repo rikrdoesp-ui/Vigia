@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-b0rRRiObfa9OpXHNYRinE+65J/z61XXoayEuQ9bnxWs='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-Ws3wNFX16TDUj/LYifZF0Sr4bJDxL5CcOJoij4MMDa8='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
@@ -52,6 +52,11 @@ button{cursor:pointer}
 .top .tt h1{margin:0;font-weight:700;line-height:1.4}
 .top .tt b,.top .tt h1{font-size:var(--fs-base);color:var(--pri);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top .tt span{font-size:var(--fs-sm);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Nombre de la app más visible en la pantalla de inicio */
+.top .tt.brand b{font-size:26px;font-weight:800;line-height:1.05;letter-spacing:-.015em}
+.top:has(.tt.brand) img.vg{height:44px;width:44px}
+.top .tt.brand b .ver{font-size:var(--fs-sm);font-weight:600;color:var(--muted);letter-spacing:0;margin-left:4px;vertical-align:2px}
+@media (max-width:560px){.top .tt.brand b{font-size:var(--fs-xl)}.top:has(.tt.brand) img.vg{height:38px;width:38px}}
 .top .acts{display:flex;gap:8px;align-items:center}
 .save{font-size:var(--fs-sm);color:var(--muted);white-space:nowrap}
 .save.ok::before{content:"● ";color:var(--si)}
@@ -87,12 +92,18 @@ h2{font-size:var(--fs-lg);margin:0 0 12px;color:var(--pri)}
 /* Tarjetas de proyecto en el inicio */
 .pcard{padding:18px;display:flex;flex-direction:column;gap:10px;text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%;transition:border-color .12s,transform .12s}
 .pcard:hover{border-color:var(--pri)}
+/* Franja de color según el semáforo de la última ficha completa */
+.pcard{border-left-width:5px!important;border-left-style:solid!important}
+.pcard.edge-ok{border-left-color:var(--si)!important}.pcard.edge-warn{border-left-color:var(--warn)!important}
+.pcard.edge-bad{border-left-color:var(--no)!important}.pcard.edge-none{border-left-color:var(--line2)!important}
+/* Números de ancho fijo en los porcentajes */
+.tv,.kpi b,.fchip,.tmes td,.imap td{font-variant-numeric:tabular-nums}
 .pcard:active{transform:scale(.99)}
 .pcard .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .pcard .h b{font-size:var(--fs-lg);color:var(--pri)}
 .pcard .meta{color:var(--muted);font-size:var(--fs-md)}
 .pcard .tot{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.pcard .tot .lbl{font-size:var(--fs-xs);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;width:100%}
+.pcard .tot .sub{font-size:var(--fs-md);color:var(--muted);width:100%}
 .pcard .tot .tv{font-size:var(--fs-2xl);font-weight:700;line-height:1.05;color:var(--pri)}
 .pcard .tot .tv.muted{color:var(--muted)}
 .pcard .pfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto;font-size:var(--fs-md);color:var(--muted)}
@@ -1693,7 +1704,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.06-1526';
+const APP_VERSION = '2026.11.06-1554';
+const APP_VER = '1.00';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -2029,7 +2041,7 @@ function topbar(mode) {
   const themeBtn = `<button class="btn ghost icon" data-act="theme" title="Cambiar tema" aria-label="${theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}">${theme === 'dark' ? ICON.sun : ICON.moon}</button>`;
   if (mode === 'home') {
     return `<header class="top"><img class="vg" src="${VIGIA}" alt="Vigía">
-      <div class="tt"><b>Vigía</b><span>Control y Seguimiento Ambiental · Programa Saneamiento de Panamá</span></div>
+      <div class="tt brand"><b>Vigía <small class="ver" title="Versión ${APP_VER} (${APP_VERSION})">v${APP_VER}</small></b><span>Control y Seguimiento Ambiental · Programa Saneamiento de Panamá</span></div>
       <div class="acts"><img class="psp hide-s" src="${LOGO}" alt="Programa Saneamiento de Panamá" title="Programa Saneamiento de Panamá">${themeBtn}<button class="btn ghost icon" data-act="ajustes" title="Ajustes" aria-label="Ajustes">${ICON.gear}</button></div></header>`;
   }
   if (mode === 'ind') {
@@ -2070,12 +2082,13 @@ function tarjetaProyecto(p, aviso) {
   for (const I of L) { try { if (completa(I)) { if (!ult) ult = I; } else inc++; } catch { inc++; } }
   let mc = null; try { if (ult) mc = cumplTotal(stats(ult)); } catch {}
   const contr = (L[0] && L[0].contratista) || (p.contratistas || [])[0] || '';
-  return `<button class="card pcard" data-act="proy" data-p="${esc(p.id)}" aria-label="Ver las fichas de ${esc(p.nombre)}">
-    <span class="h"><b>${esc(p.nombre)}</b><span class="pill">${esc(p.codigo)}</span></span>
-    <span class="meta">${esc(contr)}</span>
+  const nv = ult ? nivel(mc) : null, dU = ult && ult.fecha ? new Date(ult.fecha + 'T12:00:00') : null;
+  return `<button class="card pcard edge-${nv ? nv.k : 'none'}" data-act="proy" data-p="${esc(p.id)}" aria-label="Ver las fichas de ${esc(p.nombre)}">
+    <span class="h"><b>${esc(p.nombre)}</b></span>
+    <span class="meta">${esc(p.codigo)} · ${esc(contr)}</span>
     <span class="tot">${ult
-      ? `<span class="lbl">Última ficha completa · ${esc(fileBase(ult).replace(/^FCSA /, ''))}</span><span class="tv ${lvc(mc)}">${pctP(ult, mc)}</span>${chipLv(mc)}`
-      : `<span class="lbl">Última ficha completa</span><span class="tv muted">—</span><span class="hint">${L.length ? 'ninguna completa aún' : 'sin fichas'}</span>`}</span>
+      ? `<span class="tv ${lvc(mc)}">${pctP(ult, mc)}</span>${chipLv(mc)}<span class="sub">Última ficha completa: ${dU ? MESES_L[dU.getMonth()] + ' ' + dU.getFullYear() : ''}</span>`
+      : `<span class="tv muted">—</span><span class="sub">${L.length ? 'Ninguna ficha completa aún' : 'Sin fichas todavía'}</span>`}</span>
     <span class="pfoot"><span>${L.length} ficha${L.length === 1 ? '' : 's'}${inc ? ` · <span class="warn-t">${inc} incompleta${inc === 1 ? '' : 's'}</span>` : ''}</span>
       ${aviso ? `<span class="pill warn">Falta ficha de ${aviso.nombreMes}</span>` : ''}<span class="go" aria-hidden="true">Ver fichas →</span></span>
   </button>`;
@@ -2820,7 +2833,7 @@ function dlgAjustes() {
           const pers = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null;
           const est = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null;
           const el = $('#s-storage', ov); if (!el) return;
-          el.textContent = [est ? `Espacio usado: ${(est.usage / 1048576).toFixed(1)} MB.` : '', pers === true ? 'Datos protegidos contra el borrado automático del navegador.' : pers === false ? 'El navegador podría borrar estos datos si le falta espacio. Instala la app para evitarlo.' : '', `Versión: ${APP_VERSION}`].filter(Boolean).join(' ');
+          el.textContent = [est ? `Espacio usado: ${(est.usage / 1048576).toFixed(1)} MB.` : '', pers === true ? 'Datos protegidos contra el borrado automático del navegador.' : pers === false ? 'El navegador podría borrar estos datos si le falta espacio. Instala la app para evitarlo.' : '', `Versión ${APP_VER} (${APP_VERSION})`].filter(Boolean).join(' ');
         } catch {}
       })();
     },
@@ -3900,6 +3913,8 @@ const instalada = () => matchMedia('(display-mode: standalone)').matches || navi
     S.list = await DB.all('inspecciones');
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
     renderHome();
+    // Aviso de versión nueva, la primera vez que se abre después de actualizar
+    try { const prev = localStorage.getItem('vigia-ver'); if (prev && prev !== APP_VER) setTimeout(() => toast(`Vigía se actualizó a la v${APP_VER}.`), 600); localStorage.setItem('vigia-ver', APP_VER); } catch {}
   } catch (e) {
     $('#app').innerHTML = `<div class="wrap"><div class="card empty">No se pudo abrir el almacenamiento del navegador.<br>${esc(e.message || e)}<br><br>Abre el archivo con Chrome, Edge o Safari actualizados.</div></div>`;
   }

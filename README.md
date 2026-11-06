@@ -21,7 +21,7 @@ node tools/publicar.mjs
 node --test
 ```
 
-`tools/publicar.mjs` pone la versión nueva, recalcula la política de seguridad (CSP) y actualiza `sw.js` para que los teléfonos instalados reciban la actualización. **Si no se corre, la app publicada queda en blanco**: la CSP solo deja ejecutar los scripts cuya huella conoce. Las pruebas lo detectan.
+`tools/publicar.mjs` sube la versión corta visible (+0.01 sobre la del último commit: 1.00 → 1.01…; para un cambio grande: `node tools/publicar.mjs 2.00`), pone la versión con fecha y hora, recalcula la política de seguridad (CSP) y actualiza `sw.js` para que los teléfonos instalados reciban la actualización. **Si no se corre, la app publicada queda en blanco**: la CSP solo deja ejecutar los scripts cuya huella conoce. Las pruebas lo detectan.
 
 ## Seguridad
 

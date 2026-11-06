@@ -162,6 +162,12 @@ test('seguridad: la app no hace llamadas de red', () => {
   assert.doesNotMatch(app, /\bfetch\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource/);
 });
 
+test('versión corta visible con dos decimales (ej. 1.00, 1.01)', () => {
+  const m = html.match(/const APP_VER = '([^']+)';/);
+  assert.ok(m, 'falta APP_VER en index.html');
+  assert.match(m[1], /^\d+\.\d{2}$/);
+});
+
 test('versiones de la app y del service worker coinciden', () => {
   const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
   const a = html.match(/const APP_VERSION = '([^']+)'/)[1];
