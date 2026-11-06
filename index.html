@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-WDuBQzvifGzl9YsMmkLgvf7vdZikiVa2Dkmp57hk/ac='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-NjsRFs/KEMqhGP/9rFcrd+fztSZXabwIFDnU7kA5f7o='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
@@ -369,6 +369,97 @@ table.imap{border-collapse:collapse;width:100%;font-size:var(--fs-sm)}
 .pill.wrap{white-space:normal;max-width:100%}
 /* Utilidades de margen */
 .m0{margin:0}.mb-8{margin:0 0 8px}.mb-12{margin:0 0 12px}.mt-8{margin:8px 0 0}.mt-12{margin:12px 0 0}
+
+/* =====================================================================
+   Capa "Liquid Glass" (adaptación web del material de vidrio de iOS 26).
+   - Vidrio esmerilado (desenfoque) solo donde el contenido pasa por debajo:
+     barra superior, franja de avance, diálogos y avisos.
+   - Tarjetas translúcidas SIN desenfoque: se ven como vidrio y no ralentizan
+     teléfonos de gama media en campo.
+   - Los colores Sí / No / N/A y la matriz quedan sólidos: son información, no decoración.
+   - Si el sistema pide menos transparencia, o el navegador no soporta el desenfoque,
+     todo vuelve a superficies opacas.
+   ===================================================================== */
+:root{
+  --r:16px; --r-md:12px;
+  --glass:rgba(255,255,255,.72); --glass-card:rgba(255,255,255,.80); --glass-ctl:rgba(255,255,255,.72);
+  --glass-edge:rgba(255,255,255,.85); --glass-line:rgba(28,31,134,.10);
+  --glass-hi:inset 0 1px 0 rgba(255,255,255,.9);
+  --glass-blur:saturate(180%) blur(20px);
+  --glass-shadow:0 1px 2px rgba(20,24,80,.05),0 8px 28px -10px rgba(20,24,80,.18);
+  --glass-amb1:rgba(71,184,245,.22); --glass-amb2:rgba(47,41,217,.14); --glass-amb3:rgba(43,182,115,.12);
+  --scrim:rgba(14,16,40,.28); --toast-bg:rgba(22,24,44,.78);
+}
+:root[data-theme="dark"]{
+  --glass:rgba(22,25,40,.70); --glass-card:rgba(26,29,46,.78); --glass-ctl:rgba(36,40,60,.70);
+  --glass-edge:rgba(255,255,255,.10); --glass-line:rgba(255,255,255,.08);
+  --glass-hi:inset 0 1px 0 rgba(255,255,255,.08);
+  --glass-shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -12px rgba(0,0,0,.6);
+  --glass-amb1:rgba(71,184,245,.14); --glass-amb2:rgba(143,149,255,.14); --glass-amb3:rgba(63,191,115,.08);
+  --scrim:rgba(0,0,0,.45); --toast-bg:rgba(40,44,68,.82);
+}
+/* Fondo con luz ambiental de los colores del programa: es lo que el vidrio "refleja" */
+html{background:var(--bg)}
+body{min-height:100vh;background:
+  radial-gradient(900px 520px at 8% -8%,var(--glass-amb1),transparent 62%),
+  radial-gradient(800px 480px at 100% 4%,var(--glass-amb2),transparent 60%),
+  radial-gradient(900px 640px at 40% 108%,var(--glass-amb3),transparent 62%),
+  var(--bg);background-attachment:fixed}
+
+/* Barras flotantes de vidrio */
+.top,.strip{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+.top{border-bottom:0;box-shadow:0 1px 0 var(--glass-line),var(--glass-hi)}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--pri),var(--pri-2) 55%,var(--acc))}
+.strip{border-bottom:1px solid var(--glass-line);box-shadow:0 10px 24px -18px rgba(20,24,80,.35)}
+
+/* Tarjetas: vidrio translúcido con borde de luz */
+.card{background:var(--glass-card);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow),var(--glass-hi)}
+.ph{background:transparent}
+.ph:hover{background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.ptools,.mxh,.subh{background:color-mix(in srgb,var(--surface2) 70%,transparent)}
+.subh{background:color-mix(in srgb,var(--pri-soft) 75%,transparent)}
+.fchip{background:var(--glass-ctl);border-color:var(--glass-edge);box-shadow:var(--glass-hi);border-radius:14px}
+.fchip.on{border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 18%,transparent),var(--glass-hi)}
+
+/* Controles interactivos: vidrio que reacciona al toque */
+.btn,.flt{background:var(--glass-ctl);border-color:color-mix(in srgb,var(--line2) 70%,transparent);box-shadow:var(--glass-hi);transition:transform .12s ease,box-shadow .15s ease,border-color .15s ease,background .15s ease}
+.btn:hover,.flt:hover{border-color:var(--pri);box-shadow:var(--glass-hi),0 4px 14px -8px color-mix(in srgb,var(--pri) 60%,transparent)}
+.btn:active,.flt:active,.b:active,.fchip:active{transform:scale(.97)}
+.btn.ghost{box-shadow:none;background:transparent}
+.btn.ghost:hover{background:var(--glass-ctl)}
+.btn.pri,.flt.on{background:linear-gradient(180deg,color-mix(in srgb,var(--pri-2) 88%,#fff),var(--pri));border-color:transparent;color:var(--pri-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 16px -8px color-mix(in srgb,var(--pri) 80%,transparent)}
+:root[data-theme="dark"] .btn.pri,:root[data-theme="dark"] .flt.on{background:linear-gradient(180deg,var(--pri-2),var(--pri))}
+.btn.danger{color:var(--no)}
+.btn:disabled{transform:none}
+.b{background:var(--glass-ctl)}
+.seg.empty{background:color-mix(in srgb,var(--surface) 40%,transparent)}
+.in-t,select.in-t,.search input,.fb textarea,.oa-t,.fr{background:color-mix(in srgb,var(--surface) 90%,transparent)}
+.chip,.pill{box-shadow:var(--glass-hi)}
+
+/* Diálogos: vidrio flotante sobre un fondo desenfocado */
+.ov{background:var(--scrim);-webkit-backdrop-filter:blur(6px) saturate(120%);backdrop-filter:blur(6px) saturate(120%)}
+.md{background:var(--glass-card);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid var(--glass-edge);border-radius:22px;box-shadow:var(--shadow-lg),var(--glass-hi)}
+.md-h,.md-f{border-color:var(--glass-line)}
+.vl li button,.slist li,.rec,.ordit{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.rec.cons{background:color-mix(in srgb,var(--no-soft) 70%,transparent)}
+
+/* Aviso flotante en cápsula de vidrio */
+#toast{background:var(--toast-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,.14);border-radius:var(--r-full);box-shadow:0 10px 30px -10px rgba(0,0,0,.45)}
+
+/* Tablas y gráfica: se quedan sobre superficie sólida para leer bien los datos */
+.trend,.mapwrap{background:var(--surface)}
+.imap tbody th{background:var(--surface)}
+
+/* Accesibilidad y compatibilidad: sin transparencias si se piden o no se soportan */
+@media (prefers-reduced-transparency:reduce){
+  :root,:root[data-theme="dark"]{--glass:var(--surface);--glass-card:var(--surface);--glass-ctl:var(--surface)}
+  .top,.strip,.md,#toast,.ov{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #toast{background:var(--toast-bg)}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root,:root[data-theme="dark"]{--glass:var(--surface);--glass-card:var(--surface)}
+}
+@media (prefers-reduced-motion:reduce){.btn,.flt,.b,.fchip{transition:none}.btn:active,.flt:active,.b:active,.fchip:active{transform:none}}
 </style>
 </head>
 <body>
@@ -1519,7 +1610,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.06-1239';
+const APP_VERSION = '2026.11.06-1252';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
