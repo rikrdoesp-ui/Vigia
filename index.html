@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-5P+OSDjA+mrHBxrRbG/ZOoCMCxoaQUjZydrelfKWTWA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-b0rRRiObfa9OpXHNYRinE+65J/z61XXoayEuQ9bnxWs='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
@@ -99,6 +99,7 @@ h2{font-size:var(--fs-lg);margin:0 0 12px;color:var(--pri)}
 .pcard .go{margin-left:auto;font-weight:700;color:var(--pri)}
 .warn-t{color:var(--warn);font-weight:600}
 .migas{margin:0 0 8px}
+.in-t.ro{display:flex;align-items:center;gap:6px;background:var(--surface2);font-weight:600}
 .inact{margin-top:16px;padding:12px 16px}
 .inact summary{cursor:pointer;font-weight:600;color:var(--muted)}
 .inact .plist{margin-top:12px}
@@ -1692,7 +1693,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.06-1518';
+const APP_VERSION = '2026.11.06-1526';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -2136,15 +2137,18 @@ function renderProyecto(pid) {
   </main>`;
 }
 
-function dlgNueva(pre) {
+function dlgNueva(pre, fijo) {
+  // fijo = se abrió desde dentro de un proyecto: la ficha es de ese proyecto, sin elegir
+  const pf = fijo && CATALOG.find(p => p.id === pre);
   const lista = CATALOG.filter(p => activo(p.id) || p.id === pre);
   const opts = (lista.length ? lista : CATALOG);
   const today = new Date(); const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   modal({
     title: 'Nueva ficha',
     body: `<div class="hgrid" style="grid-template-columns:1fr;margin-top:0">
-      <label class="f"><span class="lbl">Proyecto</span><select class="in-t" id="np">${opts.map(p => `<option value="${p.id}" ${p.id === pre ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>
-      ${lista.length < CATALOG.length ? `<p class="m0 hint">${CATALOG.length - lista.length} proyecto${CATALOG.length - lista.length === 1 ? '' : 's'} inactivo${CATALOG.length - lista.length === 1 ? '' : 's'} no aparece${CATALOG.length - lista.length === 1 ? '' : 'n'} aquí. Actívalo${CATALOG.length - lista.length === 1 ? '' : 's'} en Ajustes.</p>` : ''}
+      ${pf ? `<div class="f"><span class="lbl">Proyecto</span><div class="in-t ro">${esc(pf.nombre)} <span class="hint">· ${esc(pf.codigo)}</span></div><input type="hidden" id="np" value="${esc(pf.id)}"></div>`
+      : `<label class="f"><span class="lbl">Proyecto</span><select class="in-t" id="np">${opts.map(p => `<option value="${p.id}" ${p.id === pre ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>`}
+      ${!pf && lista.length < CATALOG.length ? `<p class="m0 hint">${CATALOG.length - lista.length} proyecto${CATALOG.length - lista.length === 1 ? '' : 's'} inactivo${CATALOG.length - lista.length === 1 ? '' : 's'} no aparece${CATALOG.length - lista.length === 1 ? '' : 'n'} aquí. Actívalo${CATALOG.length - lista.length === 1 ? '' : 's'} en Ajustes.</p>` : ''}
       <label class="f"><span class="lbl">Fecha de la inspección</span><input type="date" class="in-t" id="nf" value="${iso}"></label>
       <p class="m0 hint">Las medidas que fueron N/A en todos los frentes de la ficha anterior se precargan como N/A y quedan resaltadas para que las confirmes.</p></div>`,
     foot: `<button class="btn" data-x>Cancelar</button><button class="btn pri" id="nok">Crear ficha</button>`,
@@ -3761,7 +3765,7 @@ document.addEventListener('click', async e => {
     case 'theme': setTheme(getTheme() === 'dark' ? 'light' : 'dark'); S.view === 'ind' ? renderInd() : S.view === 'home' ? renderHome() : (() => { const tmp = document.createElement('div'); tmp.innerHTML = topbar('edit'); $('.top').replaceWith(tmp.firstElementChild); renderStrip(); })(); break;
     case 'ajustes': dlgAjustes(); break;
     case 'instalar': if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') installEvt = null; renderHome(); } break;
-    case 'nueva': dlgNueva(d.p || (S.homeProj && CATALOG.find(p => p.id === S.homeProj) ? S.homeProj : undefined)); break;
+    case 'nueva': dlgNueva(d.p || undefined, !!d.p && S.view === 'home' && S.homeProj === d.p); break;
     case 'proy': S.homeProj = d.p; renderHome(); window.scrollTo(0, 0); break;
     case 'proyectos': S.homeProj = null; renderHome(); window.scrollTo(0, 0); break;
     case 'ocultar-aviso': A.avisoOculto = { ...(A.avisoOculto || {}), [d.p]: d.mes }; await saveAjuste('avisoOculto'); renderHome(); toast('Aviso oculto hasta el próximo mes'); break;
