@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
+<meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vigía">
@@ -1541,7 +1542,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.02-1207';
+const APP_VERSION = '2026.11.06-1202';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1777,6 +1778,25 @@ function ask(title, text, buttons) {
     modal({
       title: esc(title), body: `<p class="m0">${text}</p>`, foot,
       onMount: (ov, close) => ov.querySelectorAll('[data-i]').forEach(b => b.onclick = () => { val = buttons[+b.dataset.i].value; close(); }),
+      onClose: () => res(val),
+    });
+  });
+}
+
+/* Pide un texto corto en un diálogo de la app (en lugar de prompt() del navegador). Devuelve null si se cancela. */
+function pedirTexto(title, label, ph, okLbl) {
+  return new Promise(res => {
+    let val = null;
+    modal({
+      title: esc(title),
+      body: `<label class="f"><span class="lbl">${esc(label)}</span><input class="in-t" id="pt-in" maxlength="200" autocomplete="off" placeholder="${esc(ph)}" autofocus></label>`,
+      foot: `<button class="btn" data-x>Cancelar</button><button class="btn pri" id="pt-ok">${esc(okLbl)}</button>`,
+      onMount: (ov, close) => {
+        const inp = $('#pt-in', ov);
+        const ok = () => { if (!clean(inp.value)) { inp.focus(); return; } val = inp.value; close(); };
+        $('#pt-ok', ov).onclick = ok;
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ok(); } });
+      },
       onClose: () => res(val),
     });
   });
@@ -3134,7 +3154,7 @@ function renderInd() {
   const mapRows = p.programas.map((pr, pi) => `<tr><th scope="row">${esc(pr.nombre)}</th>${d.mapa[pi].map(c => {
     if (!c.n) return '<td class="c none">—</td>';
     if (c.v == null) return '<td class="c na">N/A</td>';
-    const n = nivel(c.v); return `<td class="c ${n.k}" title="${n.t}">${pc(c.v)}${c.n > 1 ? '<small>2 insp.</small>' : ''}</td>`;
+    const n = nivel(c.v); return `<td class="c ${n.k}" title="${n.t}">${pc(c.v)}${c.n > 1 ? `<small>${c.n} insp.</small>` : ''}</td>`;
   }).join('')}</tr>`).join('');
   const rk = d.ranking.map(r => r.v == null
     ? `<div class="rk"><span class="rn">${esc(r.nombre)}</span><span class="rbar"></span><span class="rv hint">Sin datos (N/A)</span></div>`
@@ -3175,7 +3195,7 @@ function renderInd() {
       <div class="mapwrap mt-12" tabindex="0" role="region" aria-label="Tabla del cumplimiento mensual (desplazable)"><table class="imap tmes"><thead><tr><th scope="col">Mes</th><th scope="col">Fichas del mes</th><th scope="col">Cumplimiento mensual</th><th scope="col">Semáforo</th></tr></thead><tbody>${mesRows}</tbody></table></div></section>
     <section class="card ind-sec"><h2>Cumplimiento por programa y mes</h2>
       <div class="mapwrap" tabindex="0" role="region" aria-label="Mapa de cumplimiento por programa y mes (desplazable)"><table class="imap"><thead><tr><th scope="col">Programa</th>${d.meses.map(m => `<th scope="col">${mesLbl(m)}</th>`).join('')}</tr></thead><tbody>${mapRows}</tbody></table></div>
-      <p class="mt-8 hint">— sin inspección ese mes · N/A: todas las medidas del programa fueron N/A · “2 insp.”: promedio de dos inspecciones en el mes.</p></section>
+      <p class="mt-8 hint">— sin inspección ese mes · N/A: todas las medidas del programa fueron N/A · “3 insp.”: promedio de las 3 inspecciones de ese mes (aparece cuando hay más de una).</p></section>
     <section class="card ind-sec"><h2>Programas, del menor al mayor cumplimiento</h2><p class="mb-12 hint">Promedio del período.</p>${rk}</section>
     <section class="card ind-sec"><h2>Medidas recurrentes</h2>
       <p class="mb-12 hint">Medidas con “No” en 2 o más inspecciones del período, en cualquier frente. “Consecutivo” = el incumplimiento se repitió en inspecciones seguidas (ISO 14001, 10.2).</p>
@@ -3285,7 +3305,7 @@ async function pdfInd(d) {
     });
     y += h;
   });
-  font('normal', 7.5); doc.setTextColor(90); y += 11; doc.text(pdfTxt('- sin inspección ese mes · N/A: todas las medidas del programa fueron N/A · *: promedio de dos inspecciones en el mes.'), M, y); doc.setTextColor(0); y += 18;
+  font('normal', 7.5); doc.setTextColor(90); y += 11; doc.text(pdfTxt('- sin inspección ese mes · N/A: todas las medidas del programa fueron N/A · *: promedio de 2 o más inspecciones en el mes.'), M, y); doc.setTextColor(0); y += 18;
   // Ranking
   need(40);
   font('bold', 11); doc.text(pdfTxt('Programas, del menor al mayor cumplimiento (promedio del período)'), M, y); y += 10;
@@ -3526,7 +3546,7 @@ document.addEventListener('change', async e => {
     case 'fecha': I.fecha = t.value; touch(); renderStrip(); break;
     case 'contr':
       if (t.value === '__otro') {
-        const n = clean(prompt('Nombre del contratista:') || '');
+        const n = clean(await pedirTexto('Otro contratista', 'Nombre del contratista', 'Ej. CONSORCIO SANEAMIENTO OESTE', 'Agregar') || '').slice(0, 200);
         if (n) { const p = proj(I); (A.contratistas[p.id] ||= []); if (!A.contratistas[p.id].includes(n)) { A.contratistas[p.id].push(n); saveAjuste('contratistas'); } I.contratista = n; touch(); }
         refreshHdr();
       } else { I.contratista = t.value; touch(); }
