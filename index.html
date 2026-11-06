@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-JzxKiMGDGKSWgkoqbs0Qy5pPSwoHRJXWIwGQL7Ob2ew='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-Bfy+Fov29XYj1Bv9QpP0/deK1A4i5kiFhZ7B7fJaIZo='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
@@ -84,6 +84,24 @@ h2{font-size:var(--fs-lg);margin:0 0 12px;color:var(--pri)}
 .hero p{margin:4px 0 0;color:var(--muted)}
 .hero .row{display:flex;gap:8px;flex-wrap:wrap}
 .ilist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px}
+/* Tarjetas de proyecto en el inicio */
+.pcard{padding:18px;display:flex;flex-direction:column;gap:10px;text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%;transition:border-color .12s,transform .12s}
+.pcard:hover{border-color:var(--pri)}
+.pcard:active{transform:scale(.99)}
+.pcard .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.pcard .h b{font-size:var(--fs-lg);color:var(--pri)}
+.pcard .meta{color:var(--muted);font-size:var(--fs-md)}
+.pcard .tot{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.pcard .tot .lbl{font-size:var(--fs-xs);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;width:100%}
+.pcard .tot .tv{font-size:var(--fs-2xl);font-weight:700;line-height:1.05;color:var(--pri)}
+.pcard .tot .tv.muted{color:var(--muted)}
+.pcard .pfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto;font-size:var(--fs-md);color:var(--muted)}
+.pcard .go{margin-left:auto;font-weight:700;color:var(--pri)}
+.warn-t{color:var(--warn);font-weight:600}
+.migas{margin:0 0 8px}
+.inact{margin-top:16px;padding:12px 16px}
+.inact summary{cursor:pointer;font-weight:600;color:var(--muted)}
+.inact .plist{margin-top:12px}
 .icard{padding:16px;display:flex;flex-direction:column;gap:12px}
 .icard .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .icard .h b{font-size:var(--fs-base)}
@@ -1664,7 +1682,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.06-1423';
+const APP_VERSION = '2026.11.06-1450';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -2024,10 +2042,55 @@ function avisosMes() {
   return CATALOG.filter(p => activo(p.id) && oc[p.id] !== mes && !S.list.some(i => i && i.projectId === p.id && (i.fecha || '').slice(0, 7) === mes))
     .map(p => ({ p, mes, nombreMes: MESES_L[hoy.getMonth()] }));
 }
+/* Inicio: primero los proyectos; al tocar uno se ven solo sus fichas */
 function renderHome() {
   S.view = 'home'; S.insp = null; S.fotos = [];
-  const avisos = avisosMes();
-  const list = [...S.list].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
+  if (S.homeProj && S.homeProj !== '*' && !CATALOG.find(p => p.id === S.homeProj) && S.homeProj !== '_otros') S.homeProj = null;
+  return S.homeProj ? renderProyecto(S.homeProj) : renderProyectos();
+}
+const ordenFichas = L => [...L].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.actualizado || 0) - (a.actualizado || 0));
+const fichasDe = pid => S.list.filter(i => i && (pid === '*' || (pid === '_otros' ? !CATALOG.find(p => p.id === i.projectId) : i.projectId === pid)));
+const pieHome = () => `${installEvt && !instalada() ? `<section class="card hero"><div><h1 style="font-size:var(--fs-lg)">Instala Vigía en este dispositivo</h1><p>Queda en la pantalla de inicio y funciona sin internet en campo.</p></div><div class="row"><button class="btn pri" data-act="instalar">Instalar app</button></div></section>` : ''}
+    <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía · Desarrollada por <b>Ricardo Espino G.</b></p>`;
+
+function tarjetaProyecto(p, aviso) {
+  const L = ordenFichas(fichasDe(p.id));
+  let ult = null, inc = 0;
+  for (const I of L) { try { if (completa(I)) { if (!ult) ult = I; } else inc++; } catch { inc++; } }
+  let mc = null; try { if (ult) mc = cumplTotal(stats(ult)); } catch {}
+  const contr = (L[0] && L[0].contratista) || (p.contratistas || [])[0] || '';
+  return `<button class="card pcard" data-act="proy" data-p="${esc(p.id)}" aria-label="Ver las fichas de ${esc(p.nombre)}">
+    <span class="h"><b>${esc(p.nombre)}</b><span class="pill">${esc(p.codigo)}</span></span>
+    <span class="meta">${esc(contr)}</span>
+    <span class="tot">${ult
+      ? `<span class="lbl">Última ficha completa · ${esc(fileBase(ult).replace(/^FCSA /, ''))}</span><span class="tv ${lvc(mc)}">${pctP(ult, mc)}</span>${chipLv(mc)}`
+      : `<span class="lbl">Última ficha completa</span><span class="tv muted">—</span><span class="hint">${L.length ? 'ninguna completa aún' : 'sin fichas'}</span>`}</span>
+    <span class="pfoot"><span>${L.length} ficha${L.length === 1 ? '' : 's'}${inc ? ` · <span class="warn-t">${inc} incompleta${inc === 1 ? '' : 's'}</span>` : ''}</span>
+      ${aviso ? `<span class="pill warn">Falta ficha de ${aviso.nombreMes}</span>` : ''}<span class="go" aria-hidden="true">Ver fichas →</span></span>
+  </button>`;
+}
+
+function renderProyectos() {
+  const avisos = avisosMes(), av = id => avisos.find(a => a.p.id === id);
+  const activos = CATALOG.filter(p => activo(p.id)), inactivos = CATALOG.filter(p => !activo(p.id));
+  const otros = fichasDe('_otros');
+  $('#app').innerHTML = topbar('home') + `<main class="wrap">
+    <section class="card hero"><div><h1>Proyectos</h1><p>Elige un proyecto para ver sus fichas, o crea una nueva.</p></div>
+      <div class="row"><button class="btn pri" data-act="nueva">+ Nueva ficha</button>
+      <button class="btn" data-act="ind">Indicadores</button>
+      <span class="btn upl">Importar respaldo<input type="file" accept=".json,application/json" data-act="importar" aria-label="Importar respaldo"></span></div></section>
+    <section class="ilist plist">${activos.map(p => tarjetaProyecto(p, av(p.id))).join('')}
+      ${otros.length ? `<button class="card pcard" data-act="proy" data-p="_otros"><span class="h"><b>Otras fichas</b></span><span class="meta">${otros.length} ficha${otros.length === 1 ? '' : 's'} de proyectos que no reconoce esta versión</span><span class="pfoot"><span class="go">Ver fichas →</span></span></button>` : ''}</section>
+    ${!activos.length ? `<section class="card empty">No hay proyectos activos. Actívalos en Ajustes (⚙).</section>` : ''}
+    ${inactivos.length ? `<details class="card inact"><summary>Proyectos inactivos (${inactivos.length})</summary><div class="ilist plist">${inactivos.map(p => tarjetaProyecto(p, null)).join('')}</div></details>` : ''}
+    ${pieHome()}
+  </main>`;
+}
+
+function renderProyecto(pid) {
+  const p = CATALOG.find(x => x.id === pid);
+  const avisos = avisosMes().filter(a => a.p.id === pid);
+  const list = ordenFichas(fichasDe(pid));
   const cards = list.map(I => {
     try {
       const st = stats(I), mc = cumplTotal(st), comp = completa(I);
@@ -2050,16 +2113,16 @@ function renderHome() {
         <div class="row"><button class="btn sm danger" data-act="borrar" data-id="${esc(I && I.id)}">Eliminar</button></div></article>`;
     }
   }).join('');
+  const nom = p ? p.nombre : pid === '*' ? 'Todas las fichas' : 'Otras fichas';
   $('#app').innerHTML = topbar('home') + `<main class="wrap">
-    <section class="card hero"><div><h1>Fichas</h1><p>Crea una ficha nueva o continúa una guardada en este dispositivo.</p></div>
-      <div class="row"><button class="btn pri" data-act="nueva">+ Nueva ficha</button>
-      <button class="btn" data-act="ind">Indicadores</button>
-      <span class="btn upl">Importar respaldo<input type="file" accept=".json,application/json" data-act="importar" aria-label="Importar respaldo"></span></div></section>
+    <nav class="migas"><button class="btn ghost sm" data-act="proyectos">← Proyectos</button></nav>
+    <section class="card hero"><div><h1>${esc(nom)}</h1><p>${p ? `${esc(p.codigo)} · ${list.length} ficha${list.length === 1 ? '' : 's'} en este dispositivo` : `${list.length} ficha${list.length === 1 ? '' : 's'}`}</p></div>
+      <div class="row">${p ? `<button class="btn pri" data-act="nueva" data-p="${esc(p.id)}">+ Nueva ficha</button>
+      <button class="btn" data-act="ind" data-p="${esc(p.id)}">Indicadores</button>` : ''}</div></section>
     ${avisos.map(a => `<section class="card aviso-mes" role="status"><div><b>${esc(a.p.nombre)}: aún no hay ficha de ${a.nombreMes}.</b><span class="hint">Las fichas de control se levantan cada mes.</span></div>
       <div class="row"><button class="btn pri sm" data-act="nueva" data-p="${esc(a.p.id)}">+ Nueva ficha</button><button class="btn xs" data-act="ocultar-aviso" data-p="${esc(a.p.id)}" data-mes="${a.mes}">Ocultar este mes</button></div></section>`).join('')}
-    ${list.length ? `<section class="ilist">${cards}</section>` : `<section class="card empty">Todavía no hay fichas guardadas en este dispositivo.<br>Toca <b>+ Nueva ficha</b> para comenzar.</section>`}
-    ${installEvt && !instalada() ? `<section class="card hero"><div><h1 style="font-size:var(--fs-lg)">Instala Vigía en este dispositivo</h1><p>Queda en la pantalla de inicio y funciona sin internet en campo.</p></div><div class="row"><button class="btn pri" data-act="instalar">Instalar app</button></div></section>` : ''}
-    <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía · Desarrollada por <b>Ricardo Espino G.</b></p>
+    ${list.length ? `<section class="ilist">${cards}</section>` : `<section class="card empty">Todavía no hay fichas de este proyecto en este dispositivo.<br>Toca <b>+ Nueva ficha</b> para comenzar.</section>`}
+    ${pieHome()}
   </main>`;
 }
 
@@ -2113,7 +2176,7 @@ async function abrir(id) {
   await flush();
   const I = S.list.find(x => x.id === id) || await DB.get('inspecciones', id);
   if (!I) return;
-  S.insp = I; S.fotos = await DB.fotosDe(id);
+  S.insp = I; S.fotos = await DB.fotosDe(id); S.homeProj = I.projectId;
   S.tab = I.frentes[0] && I.frentes[0].id; S.q = ''; S.filtro = 'todas'; S.open = new Set([0]);
   renderEditor();
   window.scrollTo(0, 0);
@@ -3688,7 +3751,9 @@ document.addEventListener('click', async e => {
     case 'theme': setTheme(getTheme() === 'dark' ? 'light' : 'dark'); S.view === 'ind' ? renderInd() : S.view === 'home' ? renderHome() : (() => { const tmp = document.createElement('div'); tmp.innerHTML = topbar('edit'); $('.top').replaceWith(tmp.firstElementChild); renderStrip(); })(); break;
     case 'ajustes': dlgAjustes(); break;
     case 'instalar': if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') installEvt = null; renderHome(); } break;
-    case 'nueva': dlgNueva(d.p); break;
+    case 'nueva': dlgNueva(d.p || (S.homeProj && CATALOG.find(p => p.id === S.homeProj) ? S.homeProj : undefined)); break;
+    case 'proy': S.homeProj = d.p; renderHome(); window.scrollTo(0, 0); break;
+    case 'proyectos': S.homeProj = null; renderHome(); window.scrollTo(0, 0); break;
     case 'ocultar-aviso': A.avisoOculto = { ...(A.avisoOculto || {}), [d.p]: d.mes }; await saveAjuste('avisoOculto'); renderHome(); toast('Aviso oculto hasta el próximo mes'); break;
     case 'abrir': abrir(d.id); break;
     case 'home':
@@ -3723,7 +3788,7 @@ document.addEventListener('click', async e => {
     case 'validar': dlgValidar(false); break;
     case 'pdf': iniciarPDF(); break;
     case 'obsadic': dlgObsAdic(); break;
-    case 'ind': await flush(); S.list = await DB.all('inspecciones'); renderInd(); window.scrollTo(0, 0); break;
+    case 'ind': await flush(); S.list = await DB.all('inspecciones'); if (d.p) S.ind = { ...(S.ind || { periodo: '12m', desde: '', hasta: '' }), projectId: d.p }; renderInd(); window.scrollTo(0, 0); break;
     case 'ind-resp': dlgRespProyecto(S.ind.projectId); break;
     case 'ind-pdf': case 'ind-xlsx': {
       const d = S.indData; if (!d || !d.insp.length) return;
