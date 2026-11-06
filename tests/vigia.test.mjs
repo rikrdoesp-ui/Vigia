@@ -139,6 +139,35 @@ test('texto del PDF: símbolos fuera de la fuente se cambian o se quitan', () =>
   assert.deepEqual(plain(run('charsNoPDF')('CO₂ y 😀')), ['₂', '😀']);
 });
 
+test('seguridad: la CSP coincide con los scripts y bloquea conexiones externas', async () => {
+  const { huellas, csp, CSP_RE } = await import('../tools/publicar.mjs');
+  const m = html.match(CSP_RE);
+  assert.ok(m, 'falta la etiqueta Content-Security-Policy en index.html');
+  // Si alguien cambia index.html sin correr tools/publicar.mjs, la app quedaría en blanco: esta prueba lo detecta.
+  assert.equal(m[1], csp(huellas(html)), 'la CSP está desactualizada: corre  node tools/publicar.mjs');
+  assert.ok(html.indexOf(m[0]) < html.indexOf('<script>'), 'la CSP debe ir antes de los scripts');
+  assert.match(m[1], /connect-src 'none'/);
+  assert.doesNotMatch(m[1], /script-src[^;]*unsafe/, 'los scripts deben ir por huella, nunca con unsafe-inline');
+  assert.doesNotMatch(m[1], /https?:/, 'la CSP no debe permitir ningún sitio externo');
+});
+
+test('seguridad: librería PDF sin las vulnerabilidades conocidas (jsPDF ≥ 4.2.1)', () => {
+  const v = html.match(/jsPDF - PDF Document creation from JavaScript\s*\*\s*Version (\d+)\.(\d+)\.(\d+)/);
+  assert.ok(v, 'no se encontró la versión de jsPDF');
+  const [, a, b, c] = v.map(Number);
+  assert.ok(a > 4 || (a === 4 && (b > 2 || (b === 2 && c >= 1))), `jsPDF ${a}.${b}.${c} es anterior a 4.2.1`);
+});
+
+test('seguridad: la app no hace llamadas de red', () => {
+  assert.doesNotMatch(app, /\bfetch\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource/);
+});
+
+test('versiones de la app y del service worker coinciden', () => {
+  const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+  const a = html.match(/const APP_VERSION = '([^']+)'/)[1];
+  assert.ok(sw.includes(`const VERSION = '${a}-`), 'corre  node tools/publicar.mjs  después de cambiar index.html');
+});
+
 test('porcentajes con los decimales de cada proyecto', () => {
   assert.equal(run('pctTxt')(0.8567, 1), '85.7%');
   assert.equal(run('pctTxt')(0.8567, 0), '86%');
