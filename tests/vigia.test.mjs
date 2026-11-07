@@ -174,6 +174,16 @@ test('versiones de la app y del service worker coinciden', () => {
   assert.ok(sw.includes(`const VERSION = '${a}-`), 'corre  node tools/publicar.mjs  después de cambiar index.html');
 });
 
+test('política de privacidad: texto aprobado (sin leyes, sin hospedaje, sin avisos)', () => {
+  const t = run('privHTML')();
+  assert.match(t, /Última actualización: /);
+  for (const f of ['canales previamente autorizados', 'guarda los respaldos en un lugar seguro', 'Esta política puede actualizarse.', 'consulta con tu coordinación de ambiente', 'Cada inspector es responsable de las fichas que registra'])
+    assert.ok(t.includes(f), 'falta: ' + f);
+  for (const f of ['no lo prestes', 'versión vigente', 'Ley 81', 'Decreto', 'ANTAI', 'GitHub', 'autorice tu institución', '@'])
+    assert.ok(!t.includes(f), 'no debería decir: ' + f);
+  assert.equal((t.match(/<h2>/g) || []).length, 10);
+});
+
 test('porcentajes con los decimales de cada proyecto', () => {
   assert.equal(run('pctTxt')(0.8567, 1), '85.7%');
   assert.equal(run('pctTxt')(0.8567, 0), '86%');
