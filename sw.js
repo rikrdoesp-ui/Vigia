@@ -1,6 +1,6 @@
 /* Vigía — trabajador sin conexión. Guarda la app en el dispositivo para que abra sin internet.
    Las inspecciones y fotos NO pasan por aquí: viven en el almacenamiento del navegador. */
-const VERSION = '2026.11.07-0645-137df887e0';
+const VERSION = '2026.11.07-0654-78bb3f474b';
 const CACHE = 'vigia-' + VERSION;
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 

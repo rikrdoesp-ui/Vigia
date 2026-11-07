@@ -2,9 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-9qROR7i6nBImmQ7NcCB7RYZkiGTjOxKKivoVhGFWRpk='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-RW2iPf+K12ZzLolJHcQ4xa5ms4dd6DI2TlcAlA7L+wQ='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -520,6 +521,18 @@ body{min-height:100vh;background:
   :root,:root[data-theme="dark"]{--glass:var(--surface);--glass-card:var(--surface)}
 }
 @media (prefers-reduced-motion:reduce){.btn,.flt,.b,.fchip{transition:none}.btn:active,.flt:active,.b:active,.fchip:active{transform:none}}
+
+/* Franja de la hora y la batería (iPhone con la app instalada, y pantallas con muesca).
+   La app se dibuja detrás de esa franja y la pinta: azul del programa en modo claro, oscuro en modo oscuro.
+   El texto del sistema (hora, batería) es blanco, por eso la franja nunca es clara. */
+:root{--safe-t:env(safe-area-inset-top,0px);--sb:#1c1f86}
+:root[data-theme="dark"]{--sb:transparent}   /* en oscuro el mismo vidrio de la barra cubre la franja */
+.top{height:calc(var(--top) + var(--safe-t));padding-top:var(--safe-t);
+  background:linear-gradient(var(--sb),var(--sb)) top/100% var(--safe-t) no-repeat,var(--glass)}
+.strip{top:calc(var(--top) + var(--safe-t))}
+body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+#toast{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.ov{padding-top:max(16px,var(--safe-t));padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -1717,8 +1730,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.07-0645';
-const APP_VER = '1.02';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.07-0654';
+const APP_VER = '1.03';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1798,6 +1811,8 @@ function getTheme() { try { return localStorage.getItem('fcsa-theme') || 'light'
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
   try { localStorage.setItem('fcsa-theme', t); } catch {}
+  // Color de la barra del sistema (Android y Safari): el mismo de la franja de la hora
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = t === 'dark' ? '#161928' : '#1c1f86';
 }
 
 /* ---------------- Estado ---------------- */
