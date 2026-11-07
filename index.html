@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-+M6Zh+vE92DNaHD7a7JbNljIzUzMP8xXKL2YXYxsblQ='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-ps7bkGXZgB4ng68cL0JAqyCsz8UfhqCiITydLqM1hQ0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
 <meta name="theme-color" content="#1c1f86">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
@@ -417,6 +417,18 @@ table.imap{border-collapse:collapse;width:100%;font-size:var(--fs-sm)}
 .pill.wrap{white-space:normal;max-width:100%}
 /* Utilidades de margen */
 .m0{margin:0}.mb-8{margin:0 0 8px}.mb-12{margin:0 0 12px}.mt-8{margin:8px 0 0}.mt-12{margin:12px 0 0}
+
+/* Política de Privacidad */
+.priv{max-width:820px;margin:0 auto;padding:24px 28px;line-height:1.55}
+.priv h2{font-size:var(--fs-lg);margin:24px 0 8px}
+.priv p{margin:0 0 10px}
+.priv ul{margin:0 0 10px;padding-left:22px}
+.priv li{margin:4px 0}
+.priv .mapwrap{margin:4px 0 14px}
+.ptab td{vertical-align:top;font-size:var(--fs-md)}
+.ptab td:first-child{width:58%}
+.lnk{border:0;background:none;padding:6px 2px;color:var(--pri);font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+@media (max-width:560px){.priv{padding:16px}.ptab td{font-size:var(--fs-sm)}}
 
 /* =====================================================================
    Capa "Liquid Glass" (adaptación web del material de vidrio de iOS 26).
@@ -1705,8 +1717,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.06-1600';
-const APP_VER = '1.01';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.07-0642';
+const APP_VER = '1.02';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -2045,6 +2057,12 @@ function topbar(mode) {
       <div class="tt brand"><b>Vigía <small class="ver" title="Versión ${APP_VER} (${APP_VERSION})">v${APP_VER}</small></b><span>Control y Seguimiento Ambiental · Programa Saneamiento de Panamá</span></div>
       <div class="acts"><img class="psp hide-s" src="${LOGO}" alt="Programa Saneamiento de Panamá" title="Programa Saneamiento de Panamá">${themeBtn}<button class="btn ghost icon" data-act="ajustes" title="Ajustes" aria-label="Ajustes">${ICON.gear}</button></div></header>`;
   }
+  if (mode === 'priv') {
+    return `<header class="top"><button class="btn ghost icon" data-act="priv-volver" title="Volver" aria-label="Volver">${ICON.back}</button>
+      <img class="vg" src="${VIGIA}" alt="Vigía">
+      <div class="tt"><h1>Política de Privacidad</h1><span>Vigía · Control y Seguimiento Ambiental</span></div>
+      <div class="acts">${themeBtn}</div></header>`;
+  }
   if (mode === 'ind') {
     return `<header class="top"><button class="btn ghost icon" data-act="home" title="Volver a fichas" aria-label="Volver a fichas">${ICON.back}</button>
       <img class="vg" src="${VIGIA}" alt="Vigía">
@@ -2057,6 +2075,86 @@ function topbar(mode) {
     <div class="tt"><h1 id="ttl">${esc(fileBase(I))}</h1><span id="ttl2">${esc(fechaLarga(I.fecha))} · ${esc(zona(I) || 'sin frentes')}</span></div>
     <div class="acts"><span id="save" class="save ok hide-s">Guardado</span>${themeBtn}
     <button class="btn ghost icon" data-act="ajustes" title="Ajustes" aria-label="Ajustes">${ICON.gear}</button></div></header>`;
+}
+
+/* =====================================================================
+   VISTA: POLÍTICA DE PRIVACIDAD (texto fijo; funciona sin internet)
+   Para actualizarla: cambiar el texto y PRIV_FECHA. No se muestra ningún aviso.
+   ===================================================================== */
+const PRIV_FECHA = '7 de noviembre de 2026';
+function privHTML() {
+  return `<article class="card priv">
+    <p class="hint m0">Última actualización: ${PRIV_FECHA}</p>
+    <h2>1. Qué es Vigía</h2>
+    <p>Vigía es una herramienta de apoyo para que el personal autorizado llene las Fichas de Control y Seguimiento Ambiental (FCSA) de los proyectos del Programa Saneamiento de Panamá. Fue desarrollada por Ricardo Espino G. Cada inspector es responsable de las fichas que registra.</p>
+    <h2>2. Tus datos se quedan en tu dispositivo</h2>
+    <p>Vigía no tiene servidor, base de datos en internet ni cuentas de usuario. Lo que registras se guarda solo en el navegador del dispositivo donde usas la app. La app no envía tus datos a ningún lugar, y su configuración de seguridad bloquea las conexiones a otros sitios.</p>
+    <h2>3. Qué datos guarda la app</h2>
+    <div class="mapwrap"><table class="imap ptab"><thead><tr><th scope="col">Dato</th><th scope="col">Para qué</th></tr></thead><tbody>
+      <tr><td>Datos de cada ficha: proyecto, fecha, contratista, frentes de trabajo, respuestas Sí/No/N/A, observaciones</td><td>Llenar la ficha y calcular el cumplimiento</td></tr>
+      <tr><td>Nombres de inspectores y de quienes acompañan la inspección</td><td>Que aparezcan en la ficha; se recuerdan para sugerirlos en fichas nuevas</td></tr>
+      <tr><td>Fotos de los hallazgos y las marcas que les agregues</td><td>Evidencia en el PDF</td></tr>
+      <tr><td>Imagen de tu firma, si la cargas</td><td>Colocarla en el PDF</td></tr>
+      <tr><td>Observaciones que escribes con frecuencia</td><td>Sugerírtelas en fichas nuevas</td></tr>
+      <tr><td>Contratistas agregados, proyectos activos y otras preferencias</td><td>Ajustes de uso</td></tr>
+      <tr><td>Tema claro u oscuro</td><td>Preferencia de pantalla</td></tr>
+    </tbody></table></div>
+    <p><b>Lo que la app no recoge:</b></p>
+    <ul>
+      <li>tu ubicación: no usa el GPS, y al procesar las fotos se eliminan sus datos internos, que pueden incluir el lugar donde se tomaron;</li>
+      <li>contactos, datos del teléfono ni información de otras apps;</li>
+      <li>estadísticas de uso, publicidad ni cookies de rastreo.</li>
+    </ul>
+    <h2>4. Cuándo salen datos de tu dispositivo</h2>
+    <p>Solo cuando tú lo decides, al:</p>
+    <ul>
+      <li>generar el PDF de una ficha;</li>
+      <li>exportar el Excel de indicadores;</li>
+      <li>exportar un respaldo (archivo .json con la ficha completa y sus fotos) o el respaldo de un proyecto.</li>
+    </ul>
+    <p>Desde ese momento el archivo queda bajo tu responsabilidad y la de quien lo reciba. Los respaldos no están cifrados: guárdalos y compártelos solo por canales previamente autorizados.</p>
+    <h2>5. Cuánto tiempo se guardan</h2>
+    <p>Los datos permanecen en el dispositivo hasta que borres la ficha desde la app, borres los datos del sitio en el navegador o desinstales la app. El navegador podría borrarlos si al dispositivo le falta espacio. Exporta un respaldo después de cada visita de campo.</p>
+    <h2>6. Seguridad</h2>
+    <p>La app no se conecta a internet para enviar datos y solo ejecuta su propio código. Para proteger tus fichas:</p>
+    <ul>
+      <li>usa bloqueo de pantalla en el dispositivo;</li>
+      <li>guarda los respaldos en un lugar seguro.</li>
+    </ul>
+    <h2>7. Tus datos, bajo tu control</h2>
+    <p>Desde la app puedes:</p>
+    <ul>
+      <li><b>ver y corregir</b> tus datos, editando la ficha;</li>
+      <li><b>borrarlos</b>, con “Eliminar”;</li>
+      <li><b>llevártelos</b>, con “Exportar respaldo”.</li>
+    </ul>
+    <p>Si ya compartiste un PDF o un respaldo, la copia que tiene otra persona queda bajo su responsabilidad.</p>
+    <h2>8. Responsabilidad</h2>
+    <p>Vigía se ofrece como herramienta de apoyo. El desarrollador no recibe ni custodia las fichas y no responde por el uso que cada inspector haga de la información ni por la pérdida de datos que no se hayan respaldado.</p>
+    <h2>9. Cambios a esta política</h2>
+    <p>Esta política puede actualizarse.</p>
+    <h2>10. Contacto</h2>
+    <p class="m0">Para dudas sobre esta política, consulta con tu coordinación de ambiente.</p>
+  </article>`;
+}
+function renderPriv() {
+  S.view = 'priv'; S.insp = null; S.fotos = [];
+  $('#app').innerHTML = topbar('priv') + `<main class="wrap">${privHTML()}
+    <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía v${APP_VER} · Desarrollada por <b>Ricardo Espino G.</b></p></main>`;
+}
+/* Abre la política recordando de dónde se vino, para que "Volver" regrese ahí */
+async function abrirPriv() {
+  if (S.busy) { toast('Espera: todavía se están guardando fotos.'); return; }
+  await flush();
+  S.privDe = S.view === 'edit' && S.insp ? { view: 'edit', id: S.insp.id, y: window.scrollY } : S.view === 'ind' ? { view: 'ind' } : { view: 'home', y: window.scrollY };
+  renderPriv(); window.scrollTo(0, 0);
+}
+async function volverDePriv() {
+  const de = S.privDe || { view: 'home' }; S.privDe = null;
+  if (de.view === 'edit') { await abrir(de.id); if (de.y) window.scrollTo(0, de.y); return; }
+  S.list = await DB.all('inspecciones');
+  if (de.view === 'ind') { renderInd(); window.scrollTo(0, 0); return; }
+  renderHome(); window.scrollTo(0, de.y || 0);
 }
 
 /* Aviso de ficha del mes: desde el día 20, proyecto activo sin ficha del mes en curso (fecha del reloj del dispositivo) */
@@ -2075,7 +2173,7 @@ function renderHome() {
 const ordenFichas = L => [...L].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.actualizado || 0) - (a.actualizado || 0));
 const fichasDe = pid => S.list.filter(i => i && (pid === '*' || (pid === '_otros' ? !CATALOG.find(p => p.id === i.projectId) : i.projectId === pid)));
 const pieHome = () => `${installEvt && !instalada() ? `<section class="card hero"><div><h1 style="font-size:var(--fs-lg)">Instala Vigía en este dispositivo</h1><p>Queda en la pantalla de inicio y funciona sin internet en campo.</p></div><div class="row"><button class="btn pri" data-act="instalar">Instalar app</button></div></section>` : ''}
-    <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía · Desarrollada por <b>Ricardo Espino G.</b></p>`;
+    <p class="credit"><img src="${VIGIA}" alt="" style="width:22px;height:22px;border-radius:6px;vertical-align:-6px;margin-right:6px">Vigía · Desarrollada por <b>Ricardo Espino G.</b> · <button class="lnk" data-act="priv">Política de Privacidad</button></p>`;
 
 function tarjetaProyecto(p, aviso) {
   const L = ordenFichas(fichasDe(p.id));
@@ -2801,7 +2899,8 @@ function dlgAjustes() {
     ${A.obsLib.length ? `<ul class="slist">${[...A.obsLib].sort((a, b) => b.n - a.n).map(o => `<li><span>${esc(o.text)} <span class="hint">· usada ${o.n} vez${o.n === 1 ? '' : 'es'}</span></span><button class="btn sm ghost" data-do="${esc(o.text)}">Quitar</button></li>`).join('')}</ul>` : '<p class="hint">Se guardan solas al escribir observaciones.</p>'}
     <h3>Datos</h3><p class="m0 hint">Todo se guarda solo en este dispositivo. Exporta un respaldo después de cada visita de campo; también sirve para pasar fichas a otro equipo.</p>
     <p class="mt-8 hint" id="s-storage"></p>
-    <h3>Acerca de</h3><img src="${VIGIA}" alt="Vigía" style="width:64px;height:64px;border-radius:16px;display:block;margin-bottom:8px"><p class="m0"><b>Vigía</b> — Control y Seguimiento Ambiental.<br>Genera las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos y PDF.<br>Desarrollada por <b>Ricardo Espino G.</b></p></div>`;
+    <h3>Acerca de</h3><img src="${VIGIA}" alt="Vigía" style="width:64px;height:64px;border-radius:16px;display:block;margin-bottom:8px"><p class="m0"><b>Vigía</b> — Control y Seguimiento Ambiental.<br>Genera las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos y PDF.<br>Desarrollada por <b>Ricardo Espino G.</b></p>
+    <p class="mt-12"><button class="btn sm" id="s-priv">Política de Privacidad</button></p></div>`;
   modal({
     title: 'Ajustes', body: '<div id="s-body"></div>', foot: '<button class="btn pri" data-x>Listo</button>',
     onMount: (ov) => {
@@ -2827,6 +2926,7 @@ function dlgAjustes() {
         $$('[data-di]', ov).forEach(b => b.onclick = () => { A.inspectores.splice(+b.dataset.di, 1); saveAjuste('inspectores'); paint(); });
         $$('[data-da]', ov).forEach(b => b.onclick = () => { A.acompanantes.splice(+b.dataset.da, 1); saveAjuste('acompanantes'); paint(); });
         $$('[data-do]', ov).forEach(b => b.onclick = () => { A.obsLib = A.obsLib.filter(o => o.text !== b.dataset.do); saveAjuste('obsLib'); paint(); });
+        $('#s-priv', ov).onclick = () => { $('[data-x]', ov).click(); abrirPriv(); };
       };
       paint();
       (async () => {
@@ -3776,7 +3876,9 @@ document.addEventListener('click', async e => {
   const t = e.target.closest('[data-act]'); if (!t || !$('#app').contains(t)) return;
   const d = t.dataset, I = S.insp;
   switch (d.act) {
-    case 'theme': setTheme(getTheme() === 'dark' ? 'light' : 'dark'); S.view === 'ind' ? renderInd() : S.view === 'home' ? renderHome() : (() => { const tmp = document.createElement('div'); tmp.innerHTML = topbar('edit'); $('.top').replaceWith(tmp.firstElementChild); renderStrip(); })(); break;
+    case 'priv': abrirPriv(); break;
+    case 'priv-volver': volverDePriv(); break;
+    case 'theme': setTheme(getTheme() === 'dark' ? 'light' : 'dark'); S.view === 'priv' ? renderPriv() : S.view === 'ind' ? renderInd() : S.view === 'home' ? renderHome() : (() => { const tmp = document.createElement('div'); tmp.innerHTML = topbar('edit'); $('.top').replaceWith(tmp.firstElementChild); renderStrip(); })(); break;
     case 'ajustes': dlgAjustes(); break;
     case 'instalar': if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === 'accepted') installEvt = null; renderHome(); } break;
     case 'nueva': dlgNueva(d.p || undefined, !!d.p && S.view === 'home' && S.homeProj === d.p); break;
