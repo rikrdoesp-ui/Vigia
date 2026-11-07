@@ -177,7 +177,7 @@ test('versiones de la app y del service worker coinciden', () => {
 test('política de privacidad: texto aprobado (sin leyes, sin hospedaje, sin avisos)', () => {
   const t = run('privHTML')();
   assert.match(t, /Última actualización: /);
-  for (const f of ['canales previamente autorizados', 'guarda los respaldos en un lugar seguro', 'Esta política puede actualizarse.', 'consulta con tu coordinación de ambiente', 'Cada inspector es responsable de las fichas que registra'])
+  for (const f of ['canales previamente autorizados', 'guarda los respaldos en un lugar seguro', 'Esta política puede actualizarse.', 'consulta con tu supervisor de ambiente', 'Cada inspector es responsable de las fichas que registra'])
     assert.ok(t.includes(f), 'falta: ' + f);
   for (const f of ['no lo prestes', 'versión vigente', 'Ley 81', 'Decreto', 'ANTAI', 'GitHub', 'autorice tu institución', '@'])
     assert.ok(!t.includes(f), 'no debería decir: ' + f);
