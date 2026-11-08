@@ -2,6 +2,7 @@
   "name": "Vigía · Control y Seguimiento Ambiental",
   "short_name": "Vigía",
   "description": "Fichas de Control y Seguimiento Ambiental (FCSA) con fotos y PDF. Desarrollada por Ricardo Espino G.",
+  "id": "./",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
