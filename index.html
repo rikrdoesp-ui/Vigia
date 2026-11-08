@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-Kul7dUQJywuMbBKDSU5q7JJwqc3Gz9ykZbukp+ezrwk='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-5n2quUyG2HwGT3Py/yxAc8Viqqdd0ZjlByDT3Nzyklg='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -404,7 +404,7 @@ table.imap{border-collapse:collapse;width:100%;font-size:var(--fs-sm)}
 /* Aviso de ficha del mes y tabla mensual */
 .aviso-mes{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;margin-bottom:12px;background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
 .aviso-mes b{display:block;color:var(--warn)}
-.aviso-mes .row{display:flex;gap:8px;align-items:center}
+.aviso-mes .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .ind-per .cita{flex-basis:100%;font-size:var(--fs-xs)}
 .tmes td,.tmes th{vertical-align:middle}
 .imap.tmes tbody th{min-width:0;position:static;white-space:nowrap}
@@ -1730,8 +1730,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.07-2101';
-const APP_VER = '1.04';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.08-0148';
+const APP_VER = '1.05';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1740,15 +1740,25 @@ const uid = (p = '') => p + Date.now().toString(36) + Math.random().toString(36)
 const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
 const kid = k => 'm-' + k.replace('.', '_');
-const pctTxt = (v, dec = 1) => v == null ? '—' : (Math.round(v * 100 * 10 ** dec) / 10 ** dec).toFixed(dec) + '%';
+/* Si al redondear el número cambiaría de nivel (89.6 % → "90 %" con semáforo En alerta), se muestran los decimales necesarios */
+function pctTxt(v, dec = 1) {
+  if (v == null) return '—';
+  const red = d => Math.round(v * 100 * 10 ** d) / 10 ** d, k = nivel(v).k;
+  let d = dec;
+  while (d < 3 && nivel(red(d) / 100).k !== k) d++;
+  const t = nivel(red(d) / 100).k === k ? red(d) : Math.floor(v * 100 * 10 ** d) / 10 ** d;
+  return t.toFixed(d) + '%';
+}
 const SAFE_ID = /^[a-z0-9]{4,40}$/i;
 
 /* Numeración de medidas: se reinicia en cada subtítulo del programa */
-CATALOG.forEach(p => p.programas.forEach(pr => {
+function numerar(pr) {
   pr.subs ||= {};
   let n = 0;
   pr.nums = pr.numsTxt || pr.medidas.map((m, mi) => { if (pr.subs[mi] != null) n = 0; return ++n; });
-}));
+  return pr;
+}
+CATALOG.forEach(p => p.programas.forEach(numerar));
 const LABELS = { inspectores: 'Inspección realizada por:', zona: 'Zona / área:', fecha: 'Fecha:', proyecto: 'Proyecto:', contratista: 'Contratista:', acompanamiento: 'Acompañamiento:' };
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
@@ -1795,10 +1805,26 @@ const DB = {
   put(st, v) { return this.tx(st, 'readwrite', s => s.put(v)); },
   del(st, k) { return this.tx(st, 'readwrite', s => s.delete(k)); },
   fotosDe(id) { return this.tx('fotos', 'readonly', s => s.index('inspId').getAll(id)); },
+  /* Guarda una ficha con sus fotos en una sola operación: o queda todo, o no cambia nada */
+  guardarFicha(I, fotos, reemplazar) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction(['inspecciones', 'fotos'], 'readwrite'), st = t.objectStore('fotos');
+      t.oncomplete = () => res();
+      t.onerror = () => rej(t.error);
+      t.onabort = () => rej(t.error || new Error('se canceló el guardado'));
+      const escribir = () => {
+        try { t.objectStore('inspecciones').put(I); fotos.forEach(ph => st.put(ph)); }
+        catch (e) { rej(e); try { t.abort(); } catch {} }
+      };
+      if (!reemplazar) { escribir(); return; }
+      const q = st.index('inspId').getAllKeys(I.id);
+      q.onsuccess = () => { q.result.forEach(k => st.delete(k)); escribir(); };
+    });
+  },
 };
 
 /* Ajustes guardados en el dispositivo */
-const A = { inspectores: [], acompanantes: [], obsLib: [], firma: null, usarFirma: true, contratistas: {}, inactivos: [], avisoOculto: {} };
+const A = { inspectores: [], acompanantes: [], obsLib: [], firma: null, usarFirma: true, contratistas: {}, inactivos: [], avisoOculto: {}, respaldos: {} };
 const activo = pid => !(A.inactivos || []).includes(pid);
 async function loadAjustes() {
   const rows = await DB.all('ajustes');
@@ -1821,7 +1847,39 @@ const S = {
   q: '', filtro: 'todas', open: new Set([0]), layout: 'matrix', forceTabs: false,
 };
 
-const proj = insp => CATALOG.find(p => p.id === insp.projectId) || CATALOG[0];
+/* Cada ficha guarda una copia del formulario con el que se llenó (I.formato): medidas, edición y encabezado.
+   Las respuestas se guardan por posición ("programa.medida"), así que un cambio futuro en el catálogo
+   no puede mover ni reetiquetar las fichas ya hechas. */
+const CAMPOS_FORMATO = ['titulo', 'subtitulo', 'tituloBloque', 'banda', 'codigo', 'codigoTxt', 'edicion', 'vigencia', 'vigenciaLbl', 'proyectoTxt'];
+function congelarFormato(p) {
+  const f = {};
+  CAMPOS_FORMATO.forEach(c => { if (p[c] != null) f[c] = Array.isArray(p[c]) ? [...p[c]] : p[c]; });
+  f.programas = p.programas.map(pr => ({ nombre: pr.nombre, ...(pr.num != null ? { num: pr.num } : {}), medidas: [...pr.medidas], subs: { ...pr.subs }, ...(pr.numsTxt ? { numsTxt: [...pr.numsTxt] } : {}) }));
+  return f;
+}
+const _formas = new WeakMap();
+function proj(insp) {
+  const base = CATALOG.find(p => p.id === insp.projectId) || CATALOG[0], f = insp.formato;
+  if (!f) return base;
+  let m = _formas.get(f);
+  if (!m) { m = { ...base, ...f, programas: f.programas.map(pr => numerar({ ...pr, subs: { ...(pr.subs || {}) } })) }; _formas.set(f, m); }
+  return m;
+}
+/* Equivalencias entre el formulario de una ficha y el catálogo actual, por nombre y texto (no por posición).
+   Si una medida ya no existe, no se cuenta: nunca se atribuye a otra medida. */
+function progEn(I, p, pi) {
+  const pf = proj(I).programas, pr = p.programas[pi];
+  if (pf[pi] && pf[pi].nombre === pr.nombre) return pi;
+  return pf.findIndex(x => norm(x.nombre) === norm(pr.nombre));
+}
+function claveEn(I, p, k) {
+  const [pi, mi] = k.split('.').map(Number), i = progEn(I, p, pi);
+  if (i < 0) return null;
+  const m = proj(I).programas[i].medidas, t = p.programas[pi].medidas[mi];
+  if (m[mi] === t) return i + '.' + mi;
+  const j = m.findIndex(x => norm(x) === norm(t));
+  return j < 0 ? null : i + '.' + j;
+}
 function keysOf(p) { const ks = []; p.programas.forEach((pr, pi) => pr.medidas.forEach((m, mi) => ks.push(pi + '.' + mi))); return ks; }
 const VALID = { si: 1, no: 1, na: 1 };
 const ans = (I, k, f) => { const v = (I.answers[k] || {})[f]; return VALID[v] ? v : ''; };
@@ -1830,7 +1888,8 @@ const isPre = (I, k, f) => !!(I.prefill[k] && I.prefill[k][f]);
 const fotosDe = (k, f) => S.fotos.filter(p => p.key === k && p.frontId === f).sort((a, b) => a.orden - b.orden);
 const mayus = I => proj(I).mayusculasFrente !== false;
 const fName = (I, f) => { const i = I.frentes.findIndex(x => x.id === f); const fr = I.frentes[i]; if (!fr || !clean(fr.nombre)) return 'Frente ' + (i + 1); return mayus(I) ? clean(fr.nombre).toUpperCase() : clean(fr.nombre); };
-function medida(I, k) { const [pi, mi] = k.split('.').map(Number); const pr = proj(I).programas[pi]; return { pi, mi, num: pr.nums[mi], prog: pr.nombre, sub: subOf(pr, mi), texto: pr.medidas[mi] }; }
+const medida = (I, k) => medidaDe(proj(I), k);
+function medidaDe(p, k) { const [pi, mi] = k.split('.').map(Number); const pr = p.programas[pi]; return { pi, mi, num: pr.nums[mi], prog: pr.nombre, sub: subOf(pr, mi), texto: pr.medidas[mi] }; }
 function subOf(pr, mi) { let s = ''; Object.keys(pr.subs).forEach(i => { if (+i <= mi) s = pr.subs[i]; }); return s; }
 
 function fileBase(I) {
@@ -1851,23 +1910,23 @@ const zona = I => I.frentes.filter(f => clean(f.nombre)).map(f => fName(I, f.id)
    - Cumplimiento total = promedio de los frentes que tienen valor. */
 const avg = a => { const v = a.filter(x => x != null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
 function progPct(I, pi, fid) {
-  const pr = proj(I).programas[pi]; let si = 0, no = 0;
+  const pr = proj(I).programas[pi]; if (!pr) return null; let si = 0, no = 0;
   pr.medidas.forEach((m, mi) => { const v = ans(I, pi + '.' + mi, fid); if (v === 'si') si++; else if (v === 'no') no++; });
   return (si + no) ? si / (si + no) : null;
 }
 function stats(I) {
   const p = proj(I), ks = keysOf(p);
   return I.frentes.map(f => {
-    let si = 0, no = 0, na = 0, vac = 0, sinObs = 0;
+    let si = 0, no = 0, na = 0, vac = 0, sinObs = 0, pre = 0;
     ks.forEach(k => {
       const v = ans(I, k, f.id);
       if (v === 'si') si++;
       else if (v === 'no') { no++; if (!obsOf(I, k, f.id)) sinObs++; }
-      else if (v === 'na') na++;
+      else if (v === 'na') { na++; if (isPre(I, k, f.id)) pre++; }
       else vac++;
     });
     const progs = p.programas.map((pr, pi) => progPct(I, pi, f.id));
-    return { f, si, no, na, vac, sinObs, total: ks.length, progs, pct: avg(progs) };
+    return { f, si, no, na, vac, sinObs, pre, total: ks.length, progs, pct: avg(progs) };
   });
 }
 const cumplTotal = st => avg(st.map(s => s.pct));
@@ -1913,9 +1972,9 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('pagehide', () => { flush(); });
 window.addEventListener('beforeunload', e => { if (pending || S.busy) { flush(); e.preventDefault(); e.returnValue = ''; } });
 
-function toast(msg) {
+function toast(msg, ms = 2600) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms);
 }
 
 /* ---------------- Modales ---------------- */
@@ -2208,6 +2267,26 @@ function tarjetaProyecto(p, aviso) {
   </button>`;
 }
 
+/* Respaldos: las fichas solo existen en el dispositivo; se avisa cuáles tienen cambios sin exportar */
+async function marcarRespaldo(ids) {
+  const t = Date.now(); A.respaldos = { ...(A.respaldos || {}) };
+  ids.forEach(id => { A.respaldos[id] = t; });
+  await saveAjuste('respaldos');
+}
+const sinRespaldo = I => {
+  if (!I) return false;
+  const conDatos = Object.entries(I.answers || {}).some(([k, a]) => Object.keys(a).some(f => !isPre(I, k, f)));
+  return conDatos && ((A.respaldos || {})[I.id] || 0) < (I.actualizado || 0);
+};
+function avisoRespaldo(pid) {
+  const pend = S.list.filter(i => sinRespaldo(i) && (!pid || pid === '*' || i.projectId === pid));
+  const porP = CATALOG.map(p => ({ p, n: pend.filter(i => i.projectId === p.id).length })).filter(x => x.n);
+  if (!porP.length) return '';
+  const n = porP.reduce((a, x) => a + x.n, 0), ult = Math.max(0, ...Object.values(A.respaldos || {}));
+  return `<section class="card aviso-mes aviso-resp" role="status"><div><b>${n} ficha${n === 1 ? '' : 's'} con cambios sin respaldar.</b><span class="hint">Solo existen en este dispositivo. Último respaldo: ${ult ? esc(fechaHora(ult)) : 'ninguno'}.</span></div>
+    <div class="row">${porP.map(x => `<button class="btn pri sm" data-act="respaldar" data-p="${esc(x.p.id)}">Respaldar ${esc(x.p.nombre)} (${x.n})</button>`).join('')}</div></section>`;
+}
+
 function renderProyectos() {
   const avisos = avisosMes(), av = id => avisos.find(a => a.p.id === id);
   const activos = CATALOG.filter(p => activo(p.id)), inactivos = CATALOG.filter(p => !activo(p.id));
@@ -2217,6 +2296,7 @@ function renderProyectos() {
       <div class="row"><button class="btn pri" data-act="nueva">+ Nueva ficha</button>
       <button class="btn" data-act="ind">Indicadores</button>
       <span class="btn upl">Importar respaldo<input type="file" accept=".json,application/json" data-act="importar" aria-label="Importar respaldo"></span></div></section>
+    ${avisoRespaldo()}
     <section class="ilist plist">${activos.map(p => tarjetaProyecto(p, av(p.id))).join('')}
       ${otros.length ? `<button class="card pcard" data-act="proy" data-p="_otros"><span class="h"><b>Otras fichas</b></span><span class="meta">${otros.length} ficha${otros.length === 1 ? '' : 's'} de proyectos que no reconoce esta versión</span><span class="pfoot"><span class="go">Ver fichas →</span></span></button>` : ''}</section>
     ${!activos.length ? `<section class="card empty">No hay proyectos activos. Actívalos en Ajustes (⚙).</section>` : ''}
@@ -2232,7 +2312,7 @@ function renderProyecto(pid) {
   const cards = list.map(I => {
     try {
       const st = stats(I), mc = cumplTotal(st), comp = completa(I);
-      const vac = st.reduce((a, s) => a + s.vac + s.sinObs, 0);
+      const vac = st.reduce((a, s) => a + s.vac + s.sinObs + s.pre, 0);
       const nos = st.reduce((a, s) => a + s.no, 0);
       return `<article class="card icard">
         <div class="h"><div><b>${esc(fileBase(I))}</b><div class="meta">${esc(fechaLarga(I.fecha))} · ${esc(I.contratista || '')}</div></div>
@@ -2259,6 +2339,7 @@ function renderProyecto(pid) {
       <button class="btn" data-act="ind" data-p="${esc(p.id)}">Indicadores</button>` : ''}</div></section>
     ${avisos.map(a => `<section class="card aviso-mes" role="status"><div><b>${esc(a.p.nombre)}: aún no hay ficha de ${a.nombreMes}.</b><span class="hint">Las fichas de control se levantan cada mes.</span></div>
       <div class="row"><button class="btn pri sm" data-act="nueva" data-p="${esc(a.p.id)}">+ Nueva ficha</button><button class="btn xs" data-act="ocultar-aviso" data-p="${esc(a.p.id)}" data-mes="${a.mes}">Ocultar este mes</button></div></section>`).join('')}
+    ${avisoRespaldo(pid)}
     ${list.length ? `<section class="ilist">${cards}</section>` : `<section class="card empty">Todavía no hay fichas de este proyecto en este dispositivo.<br>Toca <b>+ Nueva ficha</b> para comenzar.</section>`}
     ${pieHome()}
   </main>`;
@@ -2295,6 +2376,7 @@ async function nuevaInspeccion(projectId, fecha) {
     inspectores: prev ? [...(prev.inspectores || [])] : [],
     acompanamiento: prev ? [...(prev.acompanamiento || [])] : [],
     contratista: (prev && prev.contratista) || p.contratistas[0] || '',
+    formato: congelarFormato(p),
     frentes: [f1], answers: {}, prefill: {}, prefillKeys: [], obs: {},
     usarFirma: A.usarFirma, prefillDesde: prev ? prev.fecha : null,
     creado: Date.now(), actualizado: Date.now(),
@@ -2302,7 +2384,8 @@ async function nuevaInspeccion(projectId, fecha) {
   if (prev) {
     // Solo cuentan las N/A confirmadas (no las precargadas que nadie revisó)
     keysOf(p).forEach(k => {
-      if (prev.frentes.length && prev.frentes.every(f => ans(prev, k, f.id) === 'na' && !isPre(prev, k, f.id))) {
+      const kp = claveEn(prev, p, k);   // la ficha anterior pudo llenarse con otra edición del formulario
+      if (kp && prev.frentes.length && prev.frentes.every(f => ans(prev, kp, f.id) === 'na' && !isPre(prev, kp, f.id))) {
         I.answers[k] = { [f1.id]: 'na' }; I.prefill[k] = { [f1.id]: true }; I.prefillKeys.push(k);
       }
     });
@@ -2403,12 +2486,12 @@ function renderStrip() {
   const tabs = S.layout === 'tabs';
   const pend = validar().errs.reduce((a, e) => a + (e.n || 1), 0);
   $('#strip').innerHTML = st.map(s => {
-    const done = s.vac === 0 && s.sinObs === 0;
+    const done = s.vac === 0 && s.sinObs === 0 && s.pre === 0;
     const filled = (s.total - s.vac) / s.total * 100;
     const tag = tabs ? 'button' : 'div';
     return `<${tag} class="fchip ${tabs && s.f.id === S.tab ? 'on' : ''} ${done ? 'done' : ''}" ${tabs ? `data-act="tab" data-f="${esc(s.f.id)}"` : ''}>
       <b>${esc(fName(I, s.f.id))}</b><span class="p ${lvc(s.pct)}" title="${(nivel(s.pct) || {}).t || ''}">${pctP(I, s.pct)}</span>
-      <small>${done ? 'Completo' : `${s.vac === 1 ? 'falta' : 'faltan'} ${s.vac}${s.sinObs ? ` · ${s.sinObs} sin obs.` : ''}`}</small><i style="width:${filled}%"></i></${tag}>`;
+      <small>${done ? 'Completo' : [s.vac ? `${s.vac === 1 ? 'falta' : 'faltan'} ${s.vac}` : '', s.sinObs ? `${s.sinObs} sin obs.` : '', s.pre ? `${s.pre} N/A por revisar` : ''].filter(Boolean).join(' · ')}</small><i style="width:${filled}%"></i></${tag}>`;
   }).join('') + `<div class="mc"><span>Cumplimiento total</span><b class="${lvc(mc)}">${pctP(I, mc)}</b>${chipLv(mc)}</div>
     <div class="end"><button class="btn sm ${pend ? '' : 'pri'}" data-act="validar">${pend ? `Revisar (${pend})` : 'Todo listo ✓'}</button></div>`;
   const t2 = $('#ttl2'); if (t2) t2.textContent = `${fechaLarga(I.fecha)} · ${zona(I) || 'sin frentes'}`;
@@ -2522,13 +2605,13 @@ function rowHTML(k) {
     const f = S.tab;
     const nos = I.frentes.filter(x => ans(I, k, x.id) === 'no');
     return `<div class="m mc2" id="${kid(k)}">
-      <div class="top2"><span class="num">${m.num}</span><div class="txt">${hl(m.texto)}</div></div>
+      <div class="top2"><span class="num">${esc(m.num)}</span><div class="txt">${hl(m.texto)}</div></div>
       ${segHTML(k, f, true)}
       ${ans(I, k, f) === 'no' ? `<div class="find">${findHTML(k, f)}${pvHTML(k)}</div>` : ''}</div>`;
   }
   const nos = I.frentes.filter(x => ans(I, k, x.id) === 'no');
   return `<div class="m mx" id="${kid(k)}" style="--nf:${I.frentes.length};--cw:${colW(I.frentes.length) - 10}px">
-    <div class="num">${m.num}</div><div class="txt">${hl(m.texto)}</div>
+    <div class="num">${esc(m.num)}</div><div class="txt">${hl(m.texto)}</div>
     ${I.frentes.map(f => segHTML(k, f.id, false)).join('')}
     ${nos.length ? `<div class="find">${nos.map(f => findHTML(k, f.id)).join('')}${pvHTML(k)}</div>` : ''}</div>`;
 }
@@ -2723,7 +2806,7 @@ function validar() {
         }
       });
       const pre = I.frentes.filter(f => isPre(I, k, f.id));
-      if (pre.length) warns.push({ t: `${ref}: N/A precargada sin revisar (${pre.map(f => fName(I, f.id)).join(', ')}).`, k, f: pre[0].id });
+      if (pre.length) errs.push({ t: `${ref}: N/A precargada sin confirmar (${pre.map(f => fName(I, f.id)).join(', ')}).`, k, f: pre[0].id });
     });
   });
   return { errs, warns };
@@ -2805,18 +2888,44 @@ function download(blob, name) {
 }
 async function exportar(id) {
   const I = S.list.find(x => x.id === id) || S.insp;
+  await flush();
   const fotos = await DB.fotosDe(id);
   const data = { app: APP_KEY, version: 1, exportado: new Date().toISOString(), inspeccion: I, fotos };
   download(new Blob([JSON.stringify(data)], { type: 'application/json' }), fileBase(I) + ' (respaldo).json');
   toast('Respaldo exportado con ' + fotos.length + ' foto' + (fotos.length === 1 ? '' : 's'));
+  await marcarRespaldo([id]);
+  if (S.view === 'home') renderHome();
 }
 /* Un respaldo se reconstruye campo por campo: nada del archivo se usa sin validar. */
 const IMG_RE = /^data:image\/(jpeg|png);base64,[A-Za-z0-9+/=]+$/;
+/* El formulario de un respaldo se reconstruye solo con textos de largo limitado */
+function sanitizarFormato(f) {
+  const mal = () => { throw new Error('tiene un formulario dañado'); };
+  const NUM = /^[0-9A-Za-z. -]{1,12}$/, cad = (v, max) => (typeof v === 'string' && v.length <= max) ? v : mal();
+  if (!f || typeof f !== 'object' || !Array.isArray(f.programas) || !f.programas.length || f.programas.length > 60) mal();
+  const out = {};
+  CAMPOS_FORMATO.forEach(c => {
+    if (f[c] == null) return;
+    if (c === 'tituloBloque') { if (!Array.isArray(f[c]) || f[c].length > 8) mal(); out[c] = f[c].map(x => cad(x, 400)); }
+    else out[c] = cad(f[c], 400);
+  });
+  out.programas = f.programas.map(pr => {
+    if (!pr || !Array.isArray(pr.medidas) || !pr.medidas.length || pr.medidas.length > 100) mal();
+    const r = { nombre: cad(pr.nombre, 400), medidas: pr.medidas.map(m => cad(m, 1500)), subs: {} };
+    if (pr.num != null) { if (!NUM.test(String(pr.num))) mal(); r.num = String(pr.num); }
+    Object.keys(pr.subs || {}).forEach(k => { if (!/^\d{1,3}$/.test(k) || +k >= r.medidas.length) mal(); r.subs[k] = cad(pr.subs[k], 400); });
+    if (pr.numsTxt != null) { if (!Array.isArray(pr.numsTxt) || pr.numsTxt.length !== r.medidas.length || !pr.numsTxt.every(n => NUM.test(String(n)))) mal(); r.numsTxt = pr.numsTxt.map(String); }
+    return r;
+  });
+  return out;
+}
 function sanitizar(data) {
   const raw = data && data.inspeccion;
   if (!raw || typeof raw !== 'object') throw new Error('no contiene una ficha');
   const p = CATALOG.find(x => x.id === raw.projectId);
   if (!p) throw new Error('es de un proyecto que no está cargado en esta app');
+  const formato = raw.formato == null ? congelarFormato(p) : sanitizarFormato(raw.formato);
+  const kf = keysOf(formato);
   const str = (v, max) => typeof v === 'string' ? v.slice(0, max) : '';
   const strs = (a, max) => Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).slice(0, 20).map(x => clean(x).slice(0, max)) : [];
   const fmap = {};
@@ -2824,7 +2933,7 @@ function sanitizar(data) {
     .map(f => { const id = SAFE_ID.test(f.id) ? f.id : uid('f'); fmap[f.id] = id; return { id, nombre: str(f.nombre, 60) }; });
   if (!frentes.length) throw new Error('no tiene frentes de trabajo');
   const answers = {}, obs = {}, prefill = {};
-  keysOf(p).forEach(k => {
+  kf.forEach(k => {
     const a = raw.answers && raw.answers[k], o = raw.obs && raw.obs[k], pf = raw.prefill && raw.prefill[k];
     Object.keys(fmap).forEach(old => {
       const nf = fmap[old];
@@ -2835,14 +2944,14 @@ function sanitizar(data) {
   });
   const I = {
     id: typeof raw.id === 'string' && SAFE_ID.test(raw.id) ? raw.id : uid('i'),
-    projectId: p.id, fecha: /^\d{4}-\d{2}-\d{2}$/.test(raw.fecha) ? raw.fecha : '',
+    formato, projectId: p.id, fecha: /^\d{4}-\d{2}-\d{2}$/.test(raw.fecha) ? raw.fecha : '',
     inspectores: strs(raw.inspectores, 120), acompanamiento: strs(raw.acompanamiento, 120),
     contratista: clean(str(raw.contratista, 200)), frentes, answers, obs, prefill, obsAdic: str(raw.obsAdic, 8000),
-    prefillKeys: Array.isArray(raw.prefillKeys) ? raw.prefillKeys.filter(k => keysOf(p).includes(k)) : [],
+    prefillKeys: Array.isArray(raw.prefillKeys) ? raw.prefillKeys.filter(k => kf.includes(k)) : [],
     usarFirma: raw.usarFirma !== false, prefillDesde: /^\d{4}-\d{2}-\d{2}$/.test(raw.prefillDesde) ? raw.prefillDesde : null,
     creado: +raw.creado || Date.now(), actualizado: +raw.actualizado || Date.now(),
   };
-  const ks = new Set(keysOf(p)), num = v => Math.min(1, Math.max(0, +v || 0));
+  const ks = new Set(kf), num = v => Math.min(1, Math.max(0, +v || 0));
   const fotos = (Array.isArray(data.fotos) ? data.fotos : []).filter(ph => ph && ks.has(ph.key) && fmap[ph.frontId] &&
       IMG_RE.test(ph.orig || '') && IMG_RE.test(ph.composite || '') && IMG_RE.test(ph.thumb || ''))
     .map(ph => ({ id: uid('p'), inspId: I.id, key: ph.key, frontId: fmap[ph.frontId], orig: ph.orig, composite: ph.composite, thumb: ph.thumb,
@@ -2877,6 +2986,7 @@ async function importar(file) {
   const rd = await redibujarFotos(r.fotos);
   let fotos = rd.fotos; r.omitidas += rd.malas;
   const ex = S.list.find(x => x.id === I.id);
+  let reemplazar = false;
   if (ex) {
     const viejo = (I.actualizado || 0) < (ex.actualizado || 0);
     const op = await ask('Esta ficha ya existe', `En este dispositivo ya está <b>${esc(fileBase(ex))}</b>.<br><br>
@@ -2886,10 +2996,11 @@ async function importar(file) {
       [{ label: 'Cancelar', value: null }, { label: 'Guardar como copia', value: 'copia' }, { label: 'Reemplazar la de este dispositivo', value: 'reemplazar', cls: viejo ? 'danger' : 'pri' }]);
     if (!op) return;
     if (op === 'copia') { const nid = uid('i'); I = { ...I, id: nid }; fotos = fotos.map(p => ({ ...p, inspId: nid })); }
-    else { for (const ph of await DB.fotosDe(I.id)) await DB.del('fotos', ph.id); }
+    else reemplazar = true;
   }
-  await DB.put('inspecciones', I);
-  for (const ph of fotos) await DB.put('fotos', ph);
+  try { await DB.guardarFicha(I, fotos, reemplazar); }
+  catch (e) { console.error(e); toast('No se pudo importar el respaldo y no se cambió nada en este dispositivo. Detalle: ' + (e.message || e), 9000); return; }
+  await marcarRespaldo([I.id]);   // la copia existe en el archivo importado
   S.list = await DB.all('inspecciones');
   toast('Respaldo importado: ' + fileBase(I) + (r.omitidas > 0 ? (r.omitidas === 1 ? ' (1 foto dañada no se importó)' : ` (${r.omitidas} fotos dañadas no se importaron)`) : ''));
   if (S.view === 'home') renderHome();
@@ -3482,7 +3593,7 @@ const PA03_CITA = 'Criterio según PA-03 Control y Seguimiento Ambiental, §6.2 
 function completa(I) {
   const p = proj(I);
   if (!I.fecha || !I.frentes || !I.frentes.length) return false;
-  return keysOf(p).every(k => I.frentes.every(f => { const v = ans(I, k, f.id); return v && (v !== 'no' || obsOf(I, k, f.id)); }));
+  return keysOf(p).every(k => I.frentes.every(f => { const v = ans(I, k, f.id); return v && !isPre(I, k, f.id) && (v !== 'no' || obsOf(I, k, f.id)); }));
 }
 const ym = d => { const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 7); };
 const addM = (s, n) => { const [y, m] = s.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
@@ -3508,7 +3619,7 @@ function datosInd(pid, per) {
   const insp = ok.map(I => {
     const st = stats(I);
     return { I, fecha: I.fecha, mes: I.fecha.slice(0, 7), total: cumplTotal(st),
-      progs: p.programas.map((pr, pi) => avg(I.frentes.map(f => progPct(I, pi, f.id)))) };
+      progs: p.programas.map((pr, pi) => { const e = progEn(I, p, pi); return avg(I.frentes.map(f => progPct(I, e, f.id))); }) };
   });
   insp.forEach((x, i) => { const mismos = insp.filter(y => y.mes === x.mes); x.lbl = mesLbl(x.mes) + (mismos.length > 1 ? ` (${+x.fecha.slice(8)})` : ''); x.idx = i; });
   const meses = mesesEntre(per.desde, per.hasta);
@@ -3517,11 +3628,11 @@ function datosInd(pid, per) {
     .sort((a, b) => (a.v == null) - (b.v == null) || (a.v ?? 0) - (b.v ?? 0) || a.pi - b.pi);
   const rec = [];
   keysOf(p).forEach(k => {
-    const occ = insp.map(x => ({ idx: x.idx, lbl: x.lbl, fs: x.I.frentes.filter(f => ans(x.I, k, f.id) === 'no').map(f => fName(x.I, f.id)) })).filter(o => o.fs.length);
+    const occ = insp.map(x => { const kx = claveEn(x.I, p, k); return { idx: x.idx, lbl: x.lbl, fs: kx ? x.I.frentes.filter(f => ans(x.I, kx, f.id) === 'no').map(f => fName(x.I, f.id)) : [] }; }).filter(o => o.fs.length);
     if (occ.length < 2) return;
     let racha = 1, best = 1;
     for (let i = 1; i < occ.length; i++) { racha = occ[i].idx === occ[i - 1].idx + 1 ? racha + 1 : 1; best = Math.max(best, racha); }
-    const m = medida(insp[0].I, k);
+    const m = medidaDe(p, k);
     rec.push({ k, m, veces: occ.length, racha: best, occ, ultimaSigue: occ[occ.length - 1].idx === insp.length - 1 });
   });
   rec.sort((a, b) => (b.racha >= 2) - (a.racha >= 2) || b.racha - a.racha || b.veces - a.veces);
@@ -3809,7 +3920,7 @@ function xlsxInd(d) {
   const resumen = [['Proyecto', 'Código', 'Fecha', 'Frentes', 'Cumplimiento total', 'Nivel']]
     .concat(d.insp.map(x => [p.nombre, p.codigo, { v: x.fecha, t: 'date' }, x.I.frentes.map(f => fName(x.I, f.id)).join(', '), { v: x.total, t: 'pct' }, nv(x.total)]));
   const prog = [['Proyecto', 'Fecha', 'Frente', 'Programa', 'Cumplimiento del programa', 'Nivel']];
-  d.insp.forEach(x => x.I.frentes.forEach(f => p.programas.forEach((pr, pi) => { const v = progPct(x.I, pi, f.id); prog.push([p.nombre, { v: x.fecha, t: 'date' }, fName(x.I, f.id), pr.nombre, v == null ? 'N/A' : { v, t: 'pct' }, nv(v)]); })));
+  d.insp.forEach(x => x.I.frentes.forEach(f => p.programas.forEach((pr, pi) => { const v = progPct(x.I, progEn(x.I, p, pi), f.id); prog.push([p.nombre, { v: x.fecha, t: 'date' }, fName(x.I, f.id), pr.nombre, v == null ? 'N/A' : { v, t: 'pct' }, nv(v)]); })));
   const mapa = [['Programa'].concat(d.meses.map(mesLbl))].concat(p.programas.map((pr, pi) => [pr.nombre].concat(d.mapa[pi].map(c => !c.n ? '' : c.v == null ? 'N/A' : { v: c.v, t: 'pct' }))));
   const rec = [['Programa', 'Medida N°', 'Medida', 'Inspecciones con "No"', 'Racha consecutiva', 'Se repite en la última ficha', 'Detalle']]
     .concat(d.rec.map(r => [r.m.prog, r.m.num, r.m.texto, r.veces, r.racha, r.ultimaSigue ? 'Sí' : 'No', r.occ.map(o => `${o.lbl}: ${o.fs.join(', ')}`).join(' | ')]));
@@ -3851,6 +3962,7 @@ async function exportarProyecto(pid, conFotos) {
   const hoy = ym(new Date()) + '-' + String(new Date().getDate()).padStart(2, '0');
   download(new Blob([JSON.stringify(data)], { type: 'application/json' }), `Vigia respaldo ${p.nombre} ${hoy}${conFotos ? '' : ' (sin fotos)'}.json`);
   toast(`Respaldo exportado: ${lista.length} ficha${lista.length === 1 ? '' : 's'}${conFotos ? `, ${fotos.length} foto${fotos.length === 1 ? '' : 's'}` : ', sin fotos'}`);
+  if (conFotos) await marcarRespaldo(lista.map(i => i.id));   // sin fotos no es un respaldo completo
 }
 async function importarVarias(data) {
   const raws = data.inspecciones.slice(0, 500), fotosAll = Array.isArray(data.fotos) ? data.fotos : [];
@@ -3867,17 +3979,23 @@ async function importarVarias(data) {
       [{ label: 'Cancelar', value: null }, { label: 'Dejar las de este dispositivo', value: 'omitir' }, { label: 'Reemplazar con las del respaldo', value: 'reemplazar', cls: 'pri' }]);
     if (!modo) return;
   }
-  let n = 0, nf = 0, fmalas = 0;
+  let n = 0, nf = 0, fmalas = 0, fallo = null; const hechas = [];
   if (fotosAll.length) toast('Revisando las fotos del respaldo… no cierres la app');
   for (const r of ok) {
     const ex = S.list.some(x => x.id === r.I.id);
     if (ex && modo === 'omitir') continue;
     const rd = await redibujarFotos(r.fotos); fmalas += r.omitidas + rd.malas;
-    if (ex) for (const ph of await DB.fotosDe(r.I.id)) await DB.del('fotos', ph.id);
-    await DB.put('inspecciones', r.I); n++;
-    for (const ph of rd.fotos) { await DB.put('fotos', ph); nf++; }
+    try { await DB.guardarFicha(r.I, rd.fotos, ex); }
+    catch (e) { console.error(e); fallo = e; break; }
+    n++; nf += rd.fotos.length; hechas.push(r.I.id);
   }
+  if (hechas.length) await marcarRespaldo(hechas);
   S.list = await DB.all('inspecciones');
+  if (fallo) {
+    toast(`Se importaron ${n} de ${ok.length} fichas. La siguiente no se pudo guardar y quedó sin cambios. Detalle: ${fallo.message || fallo}`, 9000);
+    if (S.view === 'home') renderHome(); else if (S.view === 'ind') renderInd();
+    return;
+  }
   toast(`Importadas ${n} ficha${n === 1 ? '' : 's'} y ${nf} foto${nf === 1 ? '' : 's'}${malas ? (malas === 1 ? ' · 1 ficha dañada no se importó' : ` · ${malas} fichas dañadas no se importaron`) : ''}${fmalas ? (fmalas === 1 ? ' · 1 foto dañada no se importó' : ` · ${fmalas} fotos dañadas no se importaron`) : ''}`);
   if (S.view === 'home') renderHome(); else if (S.view === 'ind') renderInd();
 }
@@ -3905,13 +4023,16 @@ document.addEventListener('click', async e => {
       if (S.busy) { toast('Espera: todavía se están guardando fotos.'); return; }
       await flush(); S.list = await DB.all('inspecciones'); renderHome(); window.scrollTo(0, 0); break;
     case 'exportar': exportar(d.id); break;
+    case 'respaldar': await exportarProyecto(d.p, true); renderHome(); break;
     case 'borrar': {
       const X = S.list.find(x => x.id === d.id);
       let nom = 'esta ficha'; try { nom = fileBase(X); } catch {}
       const ok = await ask(`¿Eliminar ${nom}?`, `Se borrarán la ficha y todas sus fotos de este dispositivo. Esta acción no se puede deshacer. Si la necesitas, exporta antes un respaldo.`, [{ label: 'Cancelar', value: false }, { label: 'Eliminar ficha', value: true, cls: 'danger' }]);
       if (!ok) return;
       for (const ph of await DB.fotosDe(d.id)) await DB.del('fotos', ph.id);
-      await DB.del('inspecciones', d.id); S.list = S.list.filter(x => x.id !== d.id); renderHome(); break;
+      await DB.del('inspecciones', d.id); S.list = S.list.filter(x => x.id !== d.id);
+      if (A.respaldos && A.respaldos[d.id]) { delete A.respaldos[d.id]; saveAjuste('respaldos'); }
+      renderHome(); break;
     }
     case 'toggle': { const pi = +d.pi; if (S.q.trim() || S.filtro !== 'todas') return; S.open.has(pi) ? S.open.delete(pi) : S.open.add(pi); renderProgs(); break; }
     case 'expand': proj(I).programas.forEach((p, i) => S.open.add(i)); renderProgs(); break;
@@ -3981,7 +4102,7 @@ document.addEventListener('change', async e => {
       if (t.value === I.projectId) break;
       const ok = await ask('Cambiar de proyecto', 'Cada proyecto tiene su propia lista de medidas. Al cambiar se borran las respuestas, observaciones y fotos de esta ficha. ¿Continuar?', [{ label: 'Cancelar', value: false }, { label: 'Cambiar proyecto', value: true, cls: 'danger' }]);
       if (!ok) { t.value = I.projectId; break; }
-      I.projectId = t.value; I.answers = {}; I.obs = {}; I.prefill = {}; I.prefillKeys = []; S.open = new Set([0]);
+      I.projectId = t.value; I.formato = congelarFormato(CATALOG.find(x => x.id === t.value)); I.answers = {}; I.obs = {}; I.prefill = {}; I.prefillKeys = []; S.open = new Set([0]);
       I.contratista = proj(I).contratistas[0] || '';
       for (const ph of S.fotos) await DB.del('fotos', ph.id); S.fotos = [];
       touch(); renderEditor(); break;
@@ -4029,6 +4150,10 @@ const instalada = () => matchMedia('(display-mode: standalone)').matches || navi
     await DB.open();
     await loadAjustes();
     S.list = await DB.all('inspecciones');
+    for (const I of S.list) {
+      const b = I && !I.formato && CATALOG.find(p => p.id === I.projectId);
+      if (b) { I.formato = congelarFormato(b); await DB.put('inspecciones', I); }
+    }
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
     renderHome();
     // Aviso de versión nueva, la primera vez que se abre después de actualizar

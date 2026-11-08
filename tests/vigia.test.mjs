@@ -174,6 +174,80 @@ test('versiones de la app y del service worker coinciden', () => {
   assert.ok(sw.includes(`const VERSION = '${a}-`), 'corre  node tools/publicar.mjs  después de cambiar index.html');
 });
 
+test('el redondeo nunca contradice el semáforo', () => {
+  const pct = run('pctTxt');
+  assert.equal(pct(0.896, 0), '89.6%');
+  assert.equal(pct(0.795, 0), '79.5%');
+  assert.equal(pct(0.8999996, 0), '89.999%');
+  assert.equal(pct(0.86, 0), '86%');
+  assert.equal(pct(0.9, 0), '90%');
+  assert.equal(pct(1, 0), '100%');
+});
+
+const prudente = () => run('CATALOG').find(x => x.id === 'prudente');
+const formatoAntiguo = () => { const f = plain(run('congelarFormato')(prudente())); f.edicion = 'ANTIGUA'; f.programas[0].medidas.reverse(); return f; };
+
+test('la ficha conserva el formulario con el que se llenó', () => {
+  const I = { ...ficha(), formato: formatoAntiguo() };
+  const n = prudente().programas[0].medidas.length;
+  assert.equal(run('proj')(I).edicion, 'ANTIGUA');
+  assert.equal(run('medida')(I, '0.0').texto, prudente().programas[0].medidas[n - 1]);
+  assert.equal(run('proj')({ projectId: 'prudente' }).edicion, prudente().edicion);
+});
+
+test('los indicadores siguen la medida por su texto, no por su posición', () => {
+  const claveEn = run('claveEn'), p = prudente();
+  const I = { ...ficha(), formato: formatoAntiguo() }, n = p.programas[0].medidas.length;
+  assert.equal(claveEn(I, p, '0.0'), `0.${n - 1}`);
+  I.formato.programas[0].medidas[n - 1] = 'Medida que ya no existe en el catálogo';
+  assert.equal(claveEn(I, p, '0.0'), null);
+  // "No" en la medida 0 del catálogo, guardada en otra posición en las dos fichas antiguas
+  const k = `0.${n - 1}`;
+  run('S').list = ['2026-09-10', '2026-10-10'].map(fecha => ({ ...ficha({ fecha, fill: x => x === k ? 'no' : 'si' }), formato: formatoAntiguo() }));
+  const d = run('datosInd')('prudente', { desde: '2026-09', hasta: '2026-10', txt: '' });
+  const r = d.rec.find(x => x.k === '0.0');
+  assert.ok(r, 'la recurrencia debe atribuirse a la medida correcta');
+  assert.equal(r.veces, 2);
+  assert.equal(d.rec.length, 1);
+});
+
+test('respaldo: conserva el formulario y rechaza uno alterado', () => {
+  const sanitizar = run('sanitizar'), raw = { ...ficha(), formato: formatoAntiguo() };
+  assert.equal(sanitizar({ inspeccion: raw }).I.formato.edicion, 'ANTIGUA');
+  assert.equal(sanitizar({ inspeccion: ficha() }).I.formato.edicion, prudente().edicion);
+  const malo = formatoAntiguo(); malo.programas[0].num = '<img src=x onerror=alert(1)>';
+  assert.throws(() => sanitizar({ inspeccion: { ...ficha(), formato: malo } }), /formulario/);
+  const malo2 = formatoAntiguo(); malo2.programas[0].medidas = 'no es lista';
+  assert.throws(() => sanitizar({ inspeccion: { ...ficha(), formato: malo2 } }), /formulario/);
+});
+
+test('N/A precargada sin confirmar: la ficha no está completa y el PDF se bloquea', () => {
+  const I = ficha(), f = I.frentes[0].id;
+  I.answers['0.0'][f] = 'na'; I.prefill['0.0'] = { [f]: true };
+  assert.equal(run('completa')(I), false);
+  assert.equal(run('stats')(I)[0].pre, 1);
+  run('S').insp = I; run('S').fotos = [];
+  assert.ok(run('validar')().errs.some(e => e.t.includes('sin confirmar')));
+  delete I.prefill['0.0'][f];
+  assert.equal(run('completa')(I), true);
+  assert.ok(!run('validar')().errs.some(e => e.t.includes('sin confirmar')));
+  run('S').insp = null;
+});
+
+test('fichas sin respaldar', () => {
+  const sin = run('sinRespaldo'), A = run('A'), I = { ...ficha(), actualizado: 100 };
+  A.respaldos = {};
+  assert.equal(sin(I), true);
+  A.respaldos = { [I.id]: 100 };
+  assert.equal(sin(I), false);
+  I.actualizado = 101;
+  assert.equal(sin(I), true);
+  const solo = ficha({ fill: () => '' }), f = solo.frentes[0].id;
+  solo.answers['0.0'] = { [f]: 'na' }; solo.prefill['0.0'] = { [f]: true }; solo.actualizado = 5;
+  assert.equal(sin(solo), false, 'una ficha solo con N/A precargadas no tiene trabajo que respaldar');
+  A.respaldos = {};
+});
+
 test('política de privacidad: texto aprobado (sin leyes, sin hospedaje, sin avisos)', () => {
   const t = run('privHTML')();
   assert.match(t, /Última actualización: /);
