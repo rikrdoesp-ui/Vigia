@@ -24,6 +24,7 @@ export const csp = h => [
   `script-src ${h.join(' ')}`,
   "style-src 'unsafe-inline'",
   "img-src 'self' data: blob:",
+  "font-src data:",             // solo las tipografías incluidas dentro de index.html
   "manifest-src 'self'",
   "worker-src 'self'",
   "frame-src blob:",            // solo la vista previa del PDF generado en el propio dispositivo
