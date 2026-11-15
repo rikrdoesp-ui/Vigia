@@ -267,7 +267,14 @@ test('fichas sin respaldar', () => {
   const solo = ficha({ fill: () => '' }), f = solo.frentes[0].id;
   solo.answers['0.0'] = { [f]: 'na' }; solo.prefill['0.0'] = { [f]: true }; solo.actualizado = 5;
   assert.equal(sin(solo), false, 'una ficha solo con N/A precargadas no tiene trabajo que respaldar');
-  A.respaldos = {};
+  // "Ocultar" esconde el aviso solo hasta que la ficha vuelve a cambiar
+  A.respaldos = {}; run('S').list = [I];
+  assert.match(run('avisoRespaldo')(), /sin respaldar/);
+  A.respaldoOculto = 200;
+  assert.equal(run('avisoRespaldo')(), '');
+  I.actualizado = 201;
+  assert.match(run('avisoRespaldo')(), /sin respaldar/);
+  A.respaldos = {}; A.respaldoOculto = 0;
 });
 
 test('política de privacidad: texto aprobado (sin leyes, sin hospedaje, sin avisos)', () => {

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-XbL0WpCv2wK8FrWO3QM9B1kCh2wx05+hdgO5qql0KF4='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-OVRVMXyjbVCLzpr5owokJABc5kA+xZ9iodsK2obiW4k='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -578,7 +578,7 @@ h2{font-size:24px}
 .fchip{border-radius:var(--r-md);box-shadow:none;border-color:var(--line)}
 .fchip.on{box-shadow:0 0 0 2px var(--pri)}
 .md{border-radius:14px}
-#toast{width:max-content;max-width:min(90vw,520px);border-radius:14px}
+#toast{width:max-content;max-width:min(90vw,520px);border-radius:14px;transition:opacity .2s,transform .2s}
 .seg.empty{background:transparent}
 .b{background:var(--surface)}
 .ptools,.mxh{background:var(--surface2)}
@@ -1804,8 +1804,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.15-1118';
-const APP_VER = '1.07';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.15-1301';
+const APP_VER = '1.08';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1899,7 +1899,7 @@ const DB = {
 };
 
 /* Ajustes guardados en el dispositivo */
-const A = { inspectores: [], acompanantes: [], obsLib: [], firma: null, usarFirma: true, contratistas: {}, inactivos: [], avisoOculto: {}, respaldos: {} };
+const A = { inspectores: [], acompanantes: [], obsLib: [], firma: null, usarFirma: true, contratistas: {}, inactivos: [], avisoOculto: {}, respaldos: {}, respaldoOculto: 0 };
 const activo = pid => !(A.inactivos || []).includes(pid);
 async function loadAjustes() {
   const rows = await DB.all('ajustes');
@@ -2380,10 +2380,11 @@ const sinRespaldo = I => {
 function avisoRespaldo(pid) {
   const pend = S.list.filter(i => sinRespaldo(i) && (!pid || pid === '*' || i.projectId === pid));
   const porP = CATALOG.map(p => ({ p, n: pend.filter(i => i.projectId === p.id).length })).filter(x => x.n);
-  if (!porP.length) return '';
+  // "Ocultar" lo esconde hasta que alguna de esas fichas vuelva a cambiar: nunca se pierde el aviso de trabajo nuevo
+  if (!porP.length || !pend.some(i => (i.actualizado || 0) > (A.respaldoOculto || 0))) return '';
   const n = porP.reduce((a, x) => a + x.n, 0), ult = Math.max(0, ...Object.values(A.respaldos || {}));
   return `<section class="card aviso-mes aviso-resp" role="status"><div><b>${n} ficha${n === 1 ? '' : 's'} con cambios sin respaldar.</b><span class="hint">Solo existen en este dispositivo. Último respaldo: ${ult ? esc(fechaHora(ult)) : 'ninguno'}.</span></div>
-    <div class="row">${porP.map(x => `<button class="btn pri sm" data-act="respaldar" data-p="${esc(x.p.id)}">Respaldar ${esc(x.p.nombre)} (${x.n})</button>`).join('')}</div></section>`;
+    <div class="row">${porP.map(x => `<button class="btn pri sm" data-act="respaldar" data-p="${esc(x.p.id)}">Respaldar ${esc(x.p.nombre)} (${x.n})</button>`).join('')}<button class="btn sm ghost" data-act="ocultar-respaldo" title="Vuelve a aparecer cuando cambies alguna ficha">Ocultar</button></div></section>`;
 }
 
 function renderProyectos() {
@@ -4134,6 +4135,7 @@ document.addEventListener('click', async e => {
       await flush(); S.list = await DB.all('inspecciones'); renderHome(); window.scrollTo(0, 0); break;
     case 'exportar': exportar(d.id); break;
     case 'respaldar': await exportarProyecto(d.p, true); renderHome(); break;
+    case 'ocultar-respaldo': A.respaldoOculto = Date.now(); await saveAjuste('respaldoOculto'); renderHome(); toast('Aviso oculto hasta que cambies alguna ficha'); break;
     case 'borrar': {
       const X = S.list.find(x => x.id === d.id);
       let nom = 'esta ficha'; try { nom = fileBase(X); } catch {}
