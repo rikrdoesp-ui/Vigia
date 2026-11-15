@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-LfX1KJLml9mYlkX4ySJKGKLMTJFE/Axp1I7LI37L1Uk='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-ggqiOpOc3z3mwisBaKhpqdPjMmTinumzQ4ZQUckeUso='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1804,7 +1804,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.08-2232';
+const APP_VERSION = '2026.11.15-1102';
 const APP_VER = '1.06';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -2660,12 +2660,14 @@ function renderProgs() {
       const tools = tabs
         ? `<div class="ptools"><span class="hint">Frente: <b data-fn="${esc(S.tab)}">${esc(fName(I, S.tab))}</b> · Cumplimiento del programa ${pp(S.tab)}</span><span class="sp"></span>
             ${preCount ? `<button class="btn sm" data-act="confpre" data-pi="${pi}">Confirmar N/A precargadas (${preCount})</button>` : ''}
-            <button class="btn sm" data-act="allsi" data-pi="${pi}" data-f="${esc(S.tab)}" title="Marca Sí solo en las casillas vacías">Todo Sí</button></div>`
-        : `<div class="ptools"><span class="hint">“Todo Sí” completa solo las casillas vacías.</span><span class="sp"></span>
+            <button class="btn sm" data-act="allsi" data-pi="${pi}" data-f="${esc(S.tab)}" title="Marca Sí solo en las casillas vacías">Todo Sí</button>
+            <button class="btn sm" data-act="allna" data-pi="${pi}" data-f="${esc(S.tab)}" title="Marca N/A solo en las casillas vacías">Todo N/A</button></div>`
+        : `<div class="ptools"><span class="hint">“Todo Sí” y “Todo N/A” completan solo las casillas vacías.</span><span class="sp"></span>
             ${preCount ? `<button class="btn sm" data-act="confpre" data-pi="${pi}">Confirmar N/A precargadas (${preCount})</button>` : ''}
-            <label class="allsi-sel"><span class="vh-only">Frente para Todo Sí</span><select class="in-t" id="as-${pi}" aria-label="Frente para Todo Sí">
+            <label class="allsi-sel"><span class="vh-only">Frente para Todo Sí o Todo N/A</span><select class="in-t" id="as-${pi}" aria-label="Frente para Todo Sí o Todo N/A">
               <option value="*">Todos los frentes</option>${I.frentes.map(f => `<option value="${esc(f.id)}">${esc(fName(I, f.id))}</option>`).join('')}</select></label>
-            <button class="btn sm" data-act="allsi" data-pi="${pi}" data-sel="as-${pi}">Todo Sí</button></div>
+            <button class="btn sm" data-act="allsi" data-pi="${pi}" data-sel="as-${pi}">Todo Sí</button>
+            <button class="btn sm" data-act="allna" data-pi="${pi}" data-sel="as-${pi}">Todo N/A</button></div>
            <div class="mxh" style="--nf:${nf};--cw:${colW(nf) - 10}px"><div class="num">#</div><div>Medida</div>
             ${I.frentes.map(f => `<div class="fh"><b data-fn="${esc(f.id)}">${esc(fName(I, f.id))}</b>${pp(f.id)}</div>`).join('')}</div>`;
       let rows = '';
@@ -2789,14 +2791,16 @@ function setAnswer(k, f, v) {
   touch(); updateAfter(k);
   if (a[f] === 'no' && S.layout === 'tabs') { const ta = $(`#${kid(k)} textarea`); if (ta && !ta.value) ta.focus(); }
 }
-function todoSi(pi, f) {
+/* "Todo Sí" / "Todo N/A": marca solo las casillas vacías del programa (nunca cambia una respuesta ya dada) */
+function todoSi(pi, f, v = 'si') {
   const I = S.insp, pr = proj(I).programas[pi];
   const fs = f === '*' ? I.frentes.map(x => x.id) : [f];
   let n = 0;
-  pr.medidas.forEach((m, mi) => { const k = pi + '.' + mi; const a = (I.answers[k] ||= {}); fs.forEach(x => { if (!a[x]) { a[x] = 'si'; n++; } }); });
+  pr.medidas.forEach((m, mi) => { const k = pi + '.' + mi; const a = (I.answers[k] ||= {}); fs.forEach(x => { if (!a[x]) { a[x] = v; n++; } }); });
   touch(); renderProgs(); renderStrip(); renderFilters();
-  const ab = $(`[data-act="allsi"][data-pi="${pi}"]`); if (ab) ab.focus({ preventScroll: true });
-  toast(n ? `${n} casilla${n === 1 ? '' : 's'} marcada${n === 1 ? '' : 's'} como Sí` : 'No había casillas vacías');
+  const ab = $(`[data-act="${v === 'na' ? 'allna' : 'allsi'}"][data-pi="${pi}"]`); if (ab) ab.focus({ preventScroll: true });
+  const lbl = v === 'na' ? 'N/A' : 'Sí';
+  toast(n ? `${n} casilla${n === 1 ? '' : 's'} marcada${n === 1 ? '' : 's'} como ${lbl}` : 'No había casillas vacías');
 }
 function confirmarPre(pi) {
   const I = S.insp, pr = proj(I).programas[pi], fs = scopeFronts();
@@ -4135,7 +4139,7 @@ document.addEventListener('click', async e => {
     case 'tab': S.tab = d.f; renderStrip(); renderFilters(); renderProgs(); break;
     case 'filtro': S.filtro = d.v; renderFilters(); renderProgs(); break;
     case 'ans': setAnswer(d.k, d.f, d.v); break;
-    case 'allsi': todoSi(+d.pi, d.sel ? ($('#' + d.sel) || {}).value || '*' : d.f); break;
+    case 'allsi': case 'allna': todoSi(+d.pi, d.sel ? ($('#' + d.sel) || {}).value || '*' : d.f, d.act === 'allna' ? 'na' : 'si'); break;
     case 'confpre': confirmarPre(+d.pi); break;
     case 'copyobs': { (I.obs[d.k] ||= {})[d.f] = (I.obs[d.k] || {})[d.from] || ''; touch(); updateAfter(d.k); break; }
     case 'usesug': { (I.obs[d.k] ||= {})[d.f] = d.t; touch(); updateAfter(d.k); addToLib(d.k, d.t); break; }
