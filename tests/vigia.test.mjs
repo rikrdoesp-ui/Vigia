@@ -211,9 +211,13 @@ test('los indicadores siguen la medida por su texto, no por su posición', () =>
   assert.equal(d.rec.length, 1);
 });
 
-test('respaldo: conserva el formulario y rechaza uno alterado', () => {
-  const sanitizar = run('sanitizar'), raw = { ...ficha(), formato: formatoAntiguo() };
-  assert.equal(sanitizar({ inspeccion: raw }).I.formato.edicion, 'ANTIGUA');
+test('respaldo: solo acepta el formulario oficial (el PDF nunca imprime textos traídos de un archivo)', () => {
+  const sanitizar = run('sanitizar');
+  assert.throws(() => sanitizar({ inspeccion: { ...ficha(), formato: formatoAntiguo() } }), /formulario distinto/);
+  const oficial = plain(run('congelarFormato')(prudente()));
+  assert.equal(sanitizar({ inspeccion: { ...ficha(), formato: oficial } }).I.formato.edicion, prudente().edicion);
+  const retocado = plain(oficial); retocado.programas[2].medidas[0] += ' (texto agregado)';
+  assert.throws(() => sanitizar({ inspeccion: { ...ficha(), formato: retocado } }), /formulario distinto/);
   assert.equal(sanitizar({ inspeccion: ficha() }).I.formato.edicion, prudente().edicion);
   const malo = formatoAntiguo(); malo.programas[0].num = '<img src=x onerror=alert(1)>';
   assert.throws(() => sanitizar({ inspeccion: { ...ficha(), formato: malo } }), /formulario/);
@@ -232,6 +236,24 @@ test('N/A precargada sin confirmar: la ficha no está completa y el PDF se bloqu
   assert.equal(run('completa')(I), true);
   assert.ok(!run('validar')().errs.some(e => e.t.includes('sin confirmar')));
   run('S').insp = null;
+});
+
+test('un error al guardar en el dispositivo nunca llega vacío', async () => {
+  // Base de datos falsa: la escritura falla y, como en los navegadores, t.error todavía es null en ese momento
+  const DB = run('DB'), real = DB.db;
+  DB.db = { transaction() {
+    const t = { error: null };
+    t.objectStore = () => ({ put() { setTimeout(() => t.onerror({ target: { error: null } }), 0); return {}; }, index: () => ({ getAllKeys: () => ({}) }), delete() {} });
+    return t;
+  } };
+  try {
+    for (const intento of [() => DB.put('inspecciones', { id: 'x' }), () => DB.guardarFicha({ id: 'x' }, [], false)]) {
+      const e = await intento().then(() => null, err => err);
+      assert.ok(e, 'debe rechazar');
+      assert.equal(typeof e.message, 'string');
+      assert.ok(e.message.length > 0);
+    }
+  } finally { DB.db = real; }
 });
 
 test('fichas sin respaldar', () => {

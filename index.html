@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-ggqiOpOc3z3mwisBaKhpqdPjMmTinumzQ4ZQUckeUso='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-XbL0WpCv2wK8FrWO3QM9B1kCh2wx05+hdgO5qql0KF4='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1804,8 +1804,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.15-1102';
-const APP_VER = '1.06';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.15-1118';
+const APP_VER = '1.07';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1870,8 +1870,9 @@ const DB = {
       let out;
       if (req) req.onsuccess = () => { out = req.result; };
       t.oncomplete = () => res(out);
-      t.onerror = () => rej(t.error);
-      t.onabort = () => rej(t.error);
+      // Al fallar una escritura, t.error todavía es null: nunca se rechaza con un error vacío
+      t.onerror = ev => rej(t.error || (ev && ev.target && ev.target.error) || new Error('no se pudo guardar en el dispositivo'));
+      t.onabort = () => rej(t.error || new Error('se canceló el guardado'));
     });
   },
   get(st, k) { return this.tx(st, 'readonly', s => s.get(k)); },
@@ -1884,7 +1885,7 @@ const DB = {
     return new Promise((res, rej) => {
       const t = this.db.transaction(['inspecciones', 'fotos'], 'readwrite'), st = t.objectStore('fotos');
       t.oncomplete = () => res();
-      t.onerror = () => rej(t.error);
+      t.onerror = ev => rej(t.error || (ev && ev.target && ev.target.error) || new Error('no se pudo guardar en el dispositivo'));
       t.onabort = () => rej(t.error || new Error('se canceló el guardado'));
       const escribir = () => {
         try { t.objectStore('inspecciones').put(I); fotos.forEach(ph => st.put(ph)); }
@@ -2040,7 +2041,11 @@ async function flush() {
     if (i >= 0) S.list[i] = I; else S.list.push(I);
     const el2 = $('#save');
     if (el2 && S.insp === I) { el2.className = 'save ok'; el2.textContent = 'Guardado ' + new Date().toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' }); }
-  } catch (e) { if (!pending) pending = I; toast('No se pudo guardar: ' + e.message); }
+  } catch (e) {
+    if (!pending) pending = I;
+    const s = $('#save'); if (s && S.insp === I) { s.className = 'save busy'; s.textContent = 'Sin guardar'; }
+    toast('No se pudo guardar: ' + ((e && e.message) || e) + '. Libera espacio en el teléfono y exporta un respaldo.', 9000);
+  }
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 window.addEventListener('pagehide', () => { flush(); });
@@ -2819,7 +2824,7 @@ async function addFotos(files, k, f) {
       try {
         const orig = await resizeFile(file, 1600, 0.82);
         const thumb = toJpeg(await loadImg(orig), 320, 0.7);
-        const rec = { id: uid('p'), inspId, key: k, frontId: f, orig, composite: orig, thumb, shapes: [], orden: Date.now() + Math.random() };
+        const rec = { id: uid('p'), inspId, key: k, frontId: f, orig, composite: null, thumb, shapes: [], orden: Date.now() + Math.random() };
         await DB.put('fotos', rec);
         if (S.insp && S.insp.id === inspId) S.fotos.push(rec);
         hechas++;
@@ -2870,8 +2875,8 @@ async function annotate(id) {
       $('#an-ok', ov).onclick = async () => {
         cur = null; draw();
         ph.shapes = shapes;
-        ph.composite = shapes.length ? c.toDataURL('image/jpeg', 0.85) : ph.orig;
-        ph.thumb = toJpeg(await loadImg(ph.composite), 320, 0.7);
+        ph.composite = shapes.length ? c.toDataURL('image/jpeg', 0.85) : null;
+        ph.thumb = toJpeg(await loadImg(ph.composite || ph.orig), 320, 0.7);
         await DB.put('fotos', ph); touch(); updateRow(ph.key); close();
       };
     },
@@ -2996,6 +3001,9 @@ async function exportar(id) {
 }
 /* Un respaldo se reconstruye campo por campo: nada del archivo se usa sin validar. */
 const IMG_RE = /^data:image\/(jpeg|png);base64,[A-Za-z0-9+/=]+$/;
+/* Huella del contenido de un formulario (sin depender del orden de las propiedades) */
+const firmaFormato = f => JSON.stringify([CAMPOS_FORMATO.map(c => f[c] ?? null),
+  f.programas.map(pr => [pr.nombre, pr.num ?? null, pr.medidas, Object.entries(pr.subs || {}).sort((a, b) => a[0] - b[0]), pr.numsTxt ?? null])]);
 /* El formulario de un respaldo se reconstruye solo con textos de largo limitado */
 function sanitizarFormato(f) {
   const mal = () => { throw new Error('tiene un formulario dañado'); };
@@ -3022,7 +3030,11 @@ function sanitizar(data) {
   if (!raw || typeof raw !== 'object') throw new Error('no contiene una ficha');
   const p = CATALOG.find(x => x.id === raw.projectId);
   if (!p) throw new Error('es de un proyecto que no está cargado en esta app');
-  const formato = raw.formato == null ? congelarFormato(p) : sanitizarFormato(raw.formato);
+  // El formulario del respaldo debe ser idéntico al oficial de esta versión: el PDF nunca imprime textos traídos de un archivo.
+  // Cuando cambie el catálogo, las ediciones anteriores se agregan aquí para seguir aceptando sus respaldos.
+  if (raw.formato != null && firmaFormato(sanitizarFormato(raw.formato)) !== firmaFormato(congelarFormato(p)))
+    throw new Error('trae un formulario distinto al oficial de esta versión de Vigía');
+  const formato = congelarFormato(p);
   const kf = keysOf(formato);
   const str = (v, max) => typeof v === 'string' ? v.slice(0, max) : '';
   const strs = (a, max) => Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).slice(0, 20).map(x => clean(x).slice(0, max)) : [];
@@ -3051,8 +3063,8 @@ function sanitizar(data) {
   };
   const ks = new Set(kf), num = v => Math.min(1, Math.max(0, +v || 0));
   const fotos = (Array.isArray(data.fotos) ? data.fotos : []).filter(ph => ph && ks.has(ph.key) && fmap[ph.frontId] &&
-      IMG_RE.test(ph.orig || '') && IMG_RE.test(ph.composite || '') && IMG_RE.test(ph.thumb || ''))
-    .map(ph => ({ id: uid('p'), inspId: I.id, key: ph.key, frontId: fmap[ph.frontId], orig: ph.orig, composite: ph.composite, thumb: ph.thumb,
+      IMG_RE.test(ph.orig || '') && (ph.composite == null || IMG_RE.test(ph.composite)) && IMG_RE.test(ph.thumb || ''))
+    .map(ph => ({ id: uid('p'), inspId: I.id, key: ph.key, frontId: fmap[ph.frontId], orig: ph.orig, composite: ph.composite && ph.composite !== ph.orig ? ph.composite : null, thumb: ph.thumb,
       shapes: (Array.isArray(ph.shapes) ? ph.shapes : []).slice(0, 50).map(s => ({ type: s && s.type === 'circle' ? 'circle' : 'arrow', x1: num(s && s.x1), y1: num(s && s.y1), x2: num(s && s.x2), y2: num(s && s.y2) })),
       orden: +ph.orden || 0, ...(Number.isInteger(ph.pos) ? { pos: ph.pos } : {}) }));
   return { I, fotos, omitidas: (Array.isArray(data.fotos) ? data.fotos.length : 0) - fotos.length };
@@ -3066,8 +3078,8 @@ async function redibujarFotos(fotos) {
   for (const ph of fotos) {
     try {
       const orig = toJpeg(await loadImg(ph.orig), 1600, 0.85);
-      const composite = ph.composite === ph.orig ? orig : toJpeg(await loadImg(ph.composite), 1600, 0.85);
-      ok.push({ ...ph, orig, composite, thumb: toJpeg(await loadImg(composite), 320, 0.7) });
+      const composite = ph.composite && ph.composite !== ph.orig ? toJpeg(await loadImg(ph.composite), 1600, 0.85) : null;
+      ok.push({ ...ph, orig, composite, thumb: toJpeg(await loadImg(composite || orig), 320, 0.7) });
     } catch { /* imagen ilegible: no se importa */ }
   }
   return { fotos: ok, malas: fotos.length - ok.length };
@@ -3097,7 +3109,7 @@ async function importar(file) {
     else reemplazar = true;
   }
   try { await DB.guardarFicha(I, fotos, reemplazar); }
-  catch (e) { console.error(e); toast('No se pudo importar el respaldo y no se cambió nada en este dispositivo. Detalle: ' + (e.message || e), 9000); return; }
+  catch (e) { console.error(e); toast('No se pudo importar el respaldo y no se cambió nada en este dispositivo. Detalle: ' + ((e && e.message) || e), 9000); return; }
   await marcarRespaldo([I.id]);   // la copia existe en el archivo importado
   S.list = await DB.all('inspecciones');
   toast('Respaldo importado: ' + fileBase(I) + (r.omitidas > 0 ? (r.omitidas === 1 ? ' (1 foto dañada no se importó)' : ` (${r.omitidas} fotos dañadas no se importaron)`) : ''));
@@ -3439,10 +3451,10 @@ async function construirPDF(I) {
     for (const g of groups) {
       const items = [];
       for (const ph of g.list) {
-        const im = await loadImg(ph.composite), a = im.naturalWidth / im.naturalHeight;
+        const src = ph.composite || ph.orig, im = await loadImg(src), a = im.naturalWidth / im.naturalHeight;
         let w = PHH * a, h = PHH;
         if (w > MAXW) { w = MAXW; h = w / a; }          // fotos panorámicas: se reduce la altura, no se deforman
-        items.push({ ph, src: ph.composite, w, h });
+        items.push({ ph, src, w, h });
       }
       const rows = []; let row = [], rw = 0;
       items.forEach(it => { if (row.length && rw + GAP + it.w > W) { rows.push(row); row = []; rw = 0; } row.push(it); rw += (row.length > 1 ? GAP : 0) + it.w; });

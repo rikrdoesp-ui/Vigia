@@ -23,6 +23,12 @@ node --test
 
 `tools/publicar.mjs` sube la versión corta visible (+0.01 sobre la del último commit: 1.00 → 1.01…; para un cambio grande: `node tools/publicar.mjs 2.00`), pone la versión con fecha y hora, recalcula la política de seguridad (CSP) y actualiza `sw.js` para que los teléfonos instalados reciban la actualización. **Si no se corre, la app publicada queda en blanco**: la CSP solo deja ejecutar los scripts cuya huella conoce. Las pruebas lo detectan.
 
+Para que Git no deje subir nada si fallan las pruebas, instala una vez el control en tu copia del repo:
+
+```
+cp tools/pre-push .git/hooks/pre-push
+```
+
 ## Seguridad
 
 - La app no envía datos a ningún sitio: todo queda en el navegador del dispositivo. La CSP (`connect-src 'none'`, sin sitios externos) lo garantiza aunque entrara código malicioso.

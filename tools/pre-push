@@ -1,0 +1,10 @@
+#!/bin/sh
+# Vigía: no deja subir a GitHub si fallan las pruebas (por ejemplo, si no se corrió tools/publicar.mjs
+# y la política de seguridad dejaría la app en blanco en todos los teléfonos).
+# Instalar una vez en cada copia del repo:  cp tools/pre-push .git/hooks/pre-push
+cd "$(git rev-parse --show-toplevel)" || exit 1
+if ! out=$(node --test 2>&1); then
+  echo "$out" | grep -E '^(not ok|# (pass|fail))'
+  echo "Las pruebas fallan: no se sube. Corre  node tools/publicar.mjs  y  node --test, y vuelve a intentar."
+  exit 1
+fi
