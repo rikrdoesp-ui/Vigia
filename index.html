@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-2qyvZIKRpp6bUlIIszMYvnDUNiVdsDLY308deDL8szs='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-b0fQMC3Gs+Gczx/1fY0mx1E11BjJhKFdjyKngCXj05I='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -611,13 +611,23 @@ h2{font-size:24px}
 .in-t,select.in-t,.search input,.fb textarea,.oa-t,.fr{border-color:var(--line-ctl)}
 .ph-h{margin:0;font:inherit;color:inherit;letter-spacing:normal}
 .ind-per .chip-lv,.kpi .chip-lv{white-space:normal}
+/* 1. El navegador dibuja sus controles (fechas, listas, barras de desplazamiento) en el mismo modo que la app */
+:root{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
+/* 2. Ventanas como <dialog> a pantalla completa: el fondo oscuro es ::backdrop y la página de atrás no se desplaza */
+dialog.ov{width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;background:transparent;color:inherit;overflow:hidden;-webkit-backdrop-filter:none;backdrop-filter:none;overscroll-behavior:contain}
+dialog.ov:not([open]){display:none}
+dialog.ov::backdrop{background:rgba(14,16,40,.28);-webkit-backdrop-filter:blur(6px) saturate(120%);backdrop-filter:blur(6px) saturate(120%);overflow:hidden;overscroll-behavior:contain}
+:root[data-theme="dark"] dialog.ov::backdrop{background:rgba(0,0,0,.45)}
+@media (prefers-reduced-transparency:reduce){dialog.ov::backdrop{-webkit-backdrop-filter:none;backdrop-filter:none}}
+/* Aviso como popover (capa superior): sin los márgenes y la posición que el navegador da por defecto */
+#toast{inset:auto auto calc(24px + env(safe-area-inset-bottom,0px)) 50%;margin:0;overflow:visible}
 .trend svg text{font-family:var(--font)}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="modals"></div>
-<div id="toast" role="status" aria-live="polite"></div>
+<div id="toast" role="status" aria-live="polite" popover="manual"></div>
 <script>/** @license
  *
  * jsPDF - PDF Document creation from JavaScript
@@ -1809,8 +1819,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.15-2134';
-const APP_VER = '1.11';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.16-0516';
+const APP_VER = '1.12';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -2070,51 +2080,57 @@ window.addEventListener('pagehide', () => { flush(); });
 window.addEventListener('beforeunload', e => { if (pending || S.busy) { flush(); e.preventDefault(); e.returnValue = ''; } });
 
 function toast(msg, ms = 2600) {
-  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms);
+  const t = $('#toast');
+  // Con una ventana abierta, lo de afuera queda inerte (el lector de pantalla no lo lee): el aviso se muestra dentro de ella
+  const host = [...document.querySelectorAll('dialog[open]')].pop() || document.body;
+  if (t.parentElement !== host) { if (t.hidePopover && t.matches(':popover-open')) t.hidePopover(); host.append(t); }
+  // Como popover, el aviso queda en la capa superior, encima de la ventana
+  if (t.showPopover) { if (t.matches(':popover-open')) t.hidePopover(); t.showPopover(); }
+  t.textContent = msg;
+  clearTimeout(toast._t); clearTimeout(toast._h);
+  requestAnimationFrame(() => t.classList.add('show'));
+  toast._t = setTimeout(() => {
+    t.classList.remove('show');
+    toast._h = setTimeout(() => { if (t.hidePopover && t.matches(':popover-open')) t.hidePopover(); }, 250);
+  }, ms);
 }
+
 
 /* ---------------- Modales ---------------- */
 let mdSeq = 0;
 const FOCUSABLE = 'button:not([disabled]),[href],input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+/* Ventanas con <dialog> nativo y showModal(): el navegador deja inerte el resto de la página, atrapa el foco,
+   cierra con Esc o con el botón/gesto Atrás de Android y devuelve el foco a quien la abrió. */
 function modal({ title, body, foot = '', wide = false, onMount, onClose }) {
-  const root = $('#modals');
-  const ov = document.createElement('div');
-  const opener = document.activeElement;
+  const ov = document.createElement('dialog');
   const tid = 'md-t' + (++mdSeq);
   ov.className = 'ov';
-  ov.innerHTML = `<div class="md ${wide ? 'wide' : ''}" role="dialog" aria-modal="true" aria-labelledby="${tid}">
+  ov.setAttribute('aria-labelledby', tid);
+  ov.innerHTML = `<div class="md ${wide ? 'wide' : ''}">
     <div class="md-h"><b id="${tid}">${title}</b><button class="btn ghost icon" data-x aria-label="Cerrar">✕</button></div>
     <div class="md-b">${body}</div>${foot ? `<div class="md-f">${foot}</div>` : ''}</div>`;
   const md = ov.firstElementChild;
-  const focusables = () => [...md.querySelectorAll(FOCUSABLE)].filter(e => e.offsetParent !== null || e.closest('.upl'));
-  const close = () => {
-    ov.remove(); document.removeEventListener('keydown', onKey, true); onClose && onClose();
-    const top = $$('#modals .ov').pop();
-    if (top) { const f = top.querySelector(FOCUSABLE); f && f.focus(); }
-    else if (opener && opener.isConnected && opener !== document.body) opener.focus();
-  };
-  const onKey = e => {
-    if ($$('#modals .ov').pop() !== ov) return;
-    if (e.key === 'Escape') { e.stopPropagation(); close(); return; }
-    if (e.key === 'Tab') {
-      const f = focusables(); if (!f.length) { e.preventDefault(); return; }
-      const first = f[0], last = f[f.length - 1];
-      if (!md.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
-      else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  const close = () => { if (ov.open) ov.close(); };
+  const opener = document.activeElement;
+  ov.addEventListener('close', () => {
+    const t = $('#toast'); if (ov.contains(t)) document.body.append(t);   // el aviso vuelve a su lugar antes de quitar la ventana
+    ov.remove(); onClose && onClose();
+    // Si al cerrar se redibujó la pantalla, el foco vuelve al botón equivalente (el original ya no existe)
+    if (opener && !opener.isConnected && opener.dataset && opener.dataset.act && document.activeElement === document.body) {
+      const igual = document.querySelector(`[data-act="${CSS.escape(opener.dataset.act)}"]`); if (igual) igual.focus({ preventScroll: true });
     }
-  };
+  });
+  // El diálogo ocupa toda la pantalla: un clic fuera del recuadro cae en el propio <dialog> y cierra, igual que la ✕
   ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-x]')) close(); });
-  document.addEventListener('keydown', onKey, true);
-  root.appendChild(ov);
+  $('#modals').appendChild(ov);
+  ov.showModal();
   onMount && onMount(ov, close);
-  if (!md.contains(document.activeElement)) {
-    const f = focusables().filter(e => !e.matches('[data-x]'));
-    // En pantallas táctiles no se enfoca un campo de texto para no abrir el teclado sin pedirlo
-    const coarse = window.matchMedia && matchMedia('(pointer:coarse)').matches;
-    const pick = coarse ? null : (md.querySelector('[autofocus]') || f.find(e => e.matches('input:not([type=file]),select,textarea')) || f[0]);
-    if (pick) pick.focus({ preventScroll: true }); else { md.tabIndex = -1; md.style.outline = 'none'; md.focus({ preventScroll: true }); }
+  // En pantallas táctiles no se enfoca un campo de texto para no abrir el teclado sin pedirlo
+  const coarse = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+  if (!coarse && (!md.contains(document.activeElement) || document.activeElement.matches('[data-x]'))) {
+    const f = [...md.querySelectorAll(FOCUSABLE)].filter(e => !e.matches('[data-x]') && (e.offsetParent !== null || e.closest('.upl')));
+    const pick = md.querySelector('[autofocus]') || f.find(e => e.matches('input:not([type=file]),select,textarea')) || f[0];
+    if (pick) pick.focus({ preventScroll: true });
   }
   return close;
 }
@@ -2142,7 +2158,7 @@ function pedirTexto(title, label, ph, okLbl) {
         const inp = $('#pt-in', ov);
         const ok = () => { if (!clean(inp.value)) { inp.focus(); return; } val = inp.value; close(); };
         $('#pt-ok', ov).onclick = ok;
-        inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ok(); } });
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (e.isComposing || e.keyCode === 229) return; ok(); } });
       },
       onClose: () => res(val),
     });
@@ -4292,7 +4308,7 @@ document.addEventListener('change', async e => {
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('in-') && e.target.dataset.kind) { e.preventDefault(); addPersona(e.target.dataset.kind); }
+  if (e.key === 'Enter' && e.target.id && e.target.id.startsWith('in-') && e.target.dataset.kind) { e.preventDefault(); if (e.isComposing || e.keyCode === 229) return; addPersona(e.target.dataset.kind); }
 });
 
 window.addEventListener('resize', debounce(() => {
