@@ -256,6 +256,23 @@ test('un error al guardar en el dispositivo nunca llega vacío', async () => {
   } finally { DB.db = real; }
 });
 
+test('exportar: filtra por proyecto y por rango de meses', () => {
+  const f = run('fichasParaExportar');
+  run('S').list = [ficha({ fecha: '2026-09-30' }), ficha({ fecha: '2026-10-01' }), ficha({ fecha: '2026-11-15' }), { ...ficha(), fecha: '' }, ficha({ projectId: 'rodeo', fecha: '2026-10-05' })];
+  assert.equal(f(['prudente']).length, 4, 'sin rango entran todas, también la ficha sin fecha');
+  assert.equal(f(['prudente'], '2026-10', '2026-10').length, 1);
+  assert.equal(f(['prudente'], '2026-10').length, 2, 'solo "desde"');
+  assert.equal(f(['prudente'], '', '2026-10').length, 2, 'solo "hasta": la ficha sin fecha no entra');
+  assert.equal(f(['prudente', 'rodeo'], '2026-10', '2026-10').length, 2);
+});
+
+test('exportar: una foto sin marcas viaja una sola vez', () => {
+  const sin = run('fotoSinCopia'), a = 'data:image/jpeg;base64,AAAA', b = 'data:image/jpeg;base64,BBBB';
+  assert.equal(sin({ orig: a, composite: a }).composite, null);
+  assert.equal(sin({ orig: a, composite: b }).composite, b);
+  assert.equal(sin({ orig: a, composite: null }).composite, null);
+});
+
 test('fichas sin respaldar', () => {
   const sin = run('sinRespaldo'), A = run('A'), I = { ...ficha(), actualizado: 100 };
   A.respaldos = {};

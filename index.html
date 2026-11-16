@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-Yv1Nibzqttp4Z4lnz2fEvE/UOMySldnAoZdBfptmKlw='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-nK3YNrxO+Ly0ziNysbVhp+dPv5mcmvbkrQQuiH1YY0o='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1804,8 +1804,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.15-2111';
-const APP_VER = '1.09';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.15-2123';
+const APP_VER = '1.10';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1880,6 +1880,19 @@ const DB = {
   put(st, v) { return this.tx(st, 'readwrite', s => s.put(v)); },
   del(st, k) { return this.tx(st, 'readwrite', s => s.delete(k)); },
   fotosDe(id) { return this.tx('fotos', 'readonly', s => s.index('inspId').getAll(id)); },
+  /* Fotos de versiones anteriores a la v1.07 guardaban la imagen dos veces: se deja una sola (de a una, sin cargarlas todas) */
+  limpiarFotos() {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction('fotos', 'readwrite'); let n = 0;
+      t.objectStore('fotos').openCursor().onsuccess = e => {
+        const c = e.target.result; if (!c) return;
+        const v = c.value; if (v.composite && v.composite === v.orig) { v.composite = null; c.update(v); n++; }
+        c.continue();
+      };
+      t.oncomplete = () => res(n);
+      t.onerror = ev => rej(t.error || (ev && ev.target && ev.target.error) || new Error('no se pudieron limpiar las fotos'));
+    });
+  },
   /* Guarda una ficha con sus fotos en una sola operación: o queda todo, o no cambia nada */
   guardarFicha(I, fotos, reemplazar) {
     return new Promise((res, rej) => {
@@ -2135,6 +2148,10 @@ function pedirTexto(title, label, ph, okLbl) {
 function loadImg(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('No se pudo leer la imagen')); i.src = src; });
 }
+/* Lado mayor de las fotos guardadas: en el PDF salen de ~5 cm de alto, 1280 px sobra y pesa ~40 % menos que 1600 */
+const FOTO_MAX = 1280;
+/* Al exportar, la versión marcada solo viaja si de verdad tiene marcas */
+const fotoSinCopia = ph => ph.composite && ph.composite === ph.orig ? { ...ph, composite: null } : ph;
 async function resizeFile(file, max, q) {
   const url = URL.createObjectURL(file);
   try { const img = await loadImg(url); return toJpeg(img, max, q); }
@@ -2824,7 +2841,7 @@ async function addFotos(files, k, f) {
   try {
     for (const file of files) {
       try {
-        const orig = await resizeFile(file, 1600, 0.82);
+        const orig = await resizeFile(file, FOTO_MAX, 0.82);
         const thumb = toJpeg(await loadImg(orig), 320, 0.7);
         const rec = { id: uid('p'), inspId, key: k, frontId: f, orig, composite: null, thumb, shapes: [], orden: Date.now() + Math.random() };
         await DB.put('fotos', rec);
@@ -2994,7 +3011,7 @@ function download(blob, name) {
 async function exportar(id) {
   const I = S.list.find(x => x.id === id) || S.insp;
   await flush();
-  const fotos = await DB.fotosDe(id);
+  const fotos = (await DB.fotosDe(id)).map(fotoSinCopia);
   const data = { app: APP_KEY, version: 1, exportado: new Date().toISOString(), inspeccion: I, fotos };
   download(new Blob([JSON.stringify(data)], { type: 'application/json' }), fileBase(I) + ' (respaldo).json');
   toast('Respaldo exportado con ' + fotos.length + ' foto' + (fotos.length === 1 ? '' : 's'));
@@ -3079,8 +3096,8 @@ async function redibujarFotos(fotos) {
   const ok = [];
   for (const ph of fotos) {
     try {
-      const orig = toJpeg(await loadImg(ph.orig), 1600, 0.85);
-      const composite = ph.composite && ph.composite !== ph.orig ? toJpeg(await loadImg(ph.composite), 1600, 0.85) : null;
+      const orig = toJpeg(await loadImg(ph.orig), FOTO_MAX, 0.85);
+      const composite = ph.composite && ph.composite !== ph.orig ? toJpeg(await loadImg(ph.composite), FOTO_MAX, 0.85) : null;
       ok.push({ ...ph, orig, composite, thumb: toJpeg(await loadImg(composite || orig), 320, 0.7) });
     } catch { /* imagen ilegible: no se importa */ }
   }
@@ -4066,32 +4083,51 @@ function dlgRespProyecto(pid) {
   });
 }
 /* "Exportar proyecto" en Inicio: elegir uno o varios proyectos y bajarlos en un solo archivo */
+/* Fichas de los proyectos elegidos; desde/hasta son meses "AAAA-MM" (vacío = sin límite; con límite, sin fecha no entra) */
+const fichasParaExportar = (pids, desde = '', hasta = '') => S.list.filter(i => i && pids.includes(i.projectId)
+  && (!desde || (i.fecha || '').slice(0, 7) >= desde) && (!hasta || (!!i.fecha && i.fecha.slice(0, 7) <= hasta)));
 function dlgExportar() {
-  const items = CATALOG.map(p => ({ p, n: S.list.filter(i => i && i.projectId === p.id).length }));
+  const items = CATALOG.map(p => ({ p, n: fichasParaExportar([p.id]).length }));
   modal({
     title: 'Exportar proyecto',
-    body: `<p class="mb-12">Elige los proyectos. Se guardan en un solo archivo con todas sus fichas; en otro equipo se carga con “Importar respaldo”.</p>
-      <ul class="slist mb-12">${items.map(({ p, n }) => `<li><label class="chk"><input type="checkbox" data-ep="${esc(p.id)}" ${n ? 'checked' : 'disabled'}> ${esc(p.nombre)} <span class="hint">· ${n} ficha${n === 1 ? '' : 's'}</span></label></li>`).join('')}</ul>
+    body: `<p class="mb-12">Elige los proyectos. Se guardan en un solo archivo con sus fichas; en otro equipo se carga con “Importar respaldo”.</p>
+      <ul class="slist mb-12">${items.map(({ p, n }) => `<li><label class="chk"><input type="checkbox" data-ep="${esc(p.id)}" ${n ? 'checked' : 'disabled'}> ${esc(p.nombre)} <span class="hint" data-n="${esc(p.id)}">· ${n} ficha${n === 1 ? '' : 's'}</span></label></li>`).join('')}</ul>
+      <div class="ind-ctl" style="padding:0 0 12px"><label class="f"><span class="lbl">Desde (mes)</span><input type="month" class="in-t" id="ep-desde"></label>
+        <label class="f"><span class="lbl">Hasta (mes)</span><input type="month" class="in-t" id="ep-hasta"></label></div>
+      <p class="mb-12 hint">Déjalos vacíos para exportar todas las fechas. Por mes los archivos quedan más livianos.</p>
       <label class="chk"><input type="checkbox" id="ep-fotos" checked> Incluir las fotos</label>
       <p class="m0 hint">Sin fotos el archivo pesa mucho menos y basta para ver los indicadores en otro equipo.</p>`,
     foot: `<button class="btn" data-x>Cancelar</button><button class="btn pri" id="ep-ok">Exportar</button>`,
     onMount: (ov, close) => {
       const elegidos = () => $$('[data-ep]:checked', ov).map(c => c.dataset.ep), ok = $('#ep-ok', ov);
+      const rango = () => { let d = $('#ep-desde', ov).value, h = $('#ep-hasta', ov).value; if (d && h && d > h) [d, h] = [h, d]; return [d, h]; };
       const pintar = () => { ok.disabled = !elegidos().length; };
-      $$('[data-ep]', ov).forEach(c => c.onchange = pintar); pintar();
-      ok.onclick = async () => { const pids = elegidos(), f = $('#ep-fotos', ov).checked; close(); await exportarProyecto(pids, f); if (S.view === 'home') renderHome(); };
+      const contar = () => {
+        const [d, h] = rango();
+        $$('[data-ep]', ov).forEach(c => {
+          const n = fichasParaExportar([c.dataset.ep], d, h).length;
+          c.disabled = !n; if (!n) c.checked = false;
+          $(`[data-n="${c.dataset.ep}"]`, ov).textContent = `· ${n} ficha${n === 1 ? '' : 's'}`;
+        });
+        pintar();
+      };
+      $$('[data-ep]', ov).forEach(c => c.onchange = pintar);
+      $('#ep-desde', ov).onchange = contar; $('#ep-hasta', ov).onchange = contar; pintar();
+      ok.onclick = async () => { const pids = elegidos(), f = $('#ep-fotos', ov).checked, [d, h] = rango(); close(); await exportarProyecto(pids, f, d, h); if (S.view === 'home') renderHome(); };
     },
   });
 }
-async function exportarProyecto(pid, conFotos) {   // pid: un id o una lista de ids
+async function exportarProyecto(pid, conFotos, desde = '', hasta = '') {   // pid: un id o una lista de ids
   await flush();
-  const pids = [].concat(pid), ps = pids.map(id => CATALOG.find(x => x.id === id)), lista = S.list.filter(i => i && pids.includes(i.projectId));
+  const pids = [].concat(pid), ps = pids.map(id => CATALOG.find(x => x.id === id)), lista = fichasParaExportar(pids, desde, hasta);
+  if (!lista.length) { toast('No hay fichas de esos proyectos en ese período.'); return; }
   let fotos = [];
-  if (conFotos) for (const I of lista) fotos = fotos.concat(await DB.fotosDe(I.id));
+  if (conFotos) for (const I of lista) fotos = fotos.concat((await DB.fotosDe(I.id)).map(fotoSinCopia));
   const data = { app: APP_KEY, version: 2, tipo: 'proyecto', proyecto: pids[0], proyectos: pids, exportado: new Date().toISOString(), inspecciones: lista, fotos };
   const hoy = ym(new Date()) + '-' + String(new Date().getDate()).padStart(2, '0');
   const nom = ps.length <= 3 ? ps.map(p => p.nombre).join(', ') : `${ps.length} proyectos`;
-  download(new Blob([JSON.stringify(data)], { type: 'application/json' }), `Vigia respaldo ${nom} ${hoy}${conFotos ? '' : ' (sin fotos)'}.json`);
+  const per = !desde && !hasta ? '' : desde === hasta ? ` ${mesLbl(desde)}` : ` ${desde ? mesLbl(desde) : 'inicio'} a ${hasta ? mesLbl(hasta) : 'hoy'}`;
+  download(new Blob([JSON.stringify(data)], { type: 'application/json' }), `Vigia respaldo ${nom}${per} ${hoy}${conFotos ? '' : ' (sin fotos)'}.json`);
   toast(`Respaldo exportado: ${lista.length} ficha${lista.length === 1 ? '' : 's'}${conFotos ? `, ${fotos.length} foto${fotos.length === 1 ? '' : 's'}` : ', sin fotos'}`);
   if (conFotos) await marcarRespaldo(lista.map(i => i.id));   // sin fotos no es un respaldo completo
 }
@@ -4289,6 +4325,7 @@ const instalada = () => matchMedia('(display-mode: standalone)').matches || navi
     }
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
     renderHome();
+    if (!A.fotosLimpias) DB.limpiarFotos().then(() => { A.fotosLimpias = true; saveAjuste('fotosLimpias'); }).catch(() => {});   // una sola vez, en segundo plano
     // Aviso de versión nueva, la primera vez que se abre después de actualizar
     try { const prev = localStorage.getItem('vigia-ver'); if (prev && prev !== APP_VER) setTimeout(() => toast(`Vigía se actualizó a la v${APP_VER}.`), 600); localStorage.setItem('vigia-ver', APP_VER); } catch {}
   } catch (e) {
