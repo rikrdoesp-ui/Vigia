@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-nK3YNrxO+Ly0ziNysbVhp+dPv5mcmvbkrQQuiH1YY0o='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-2qyvZIKRpp6bUlIIszMYvnDUNiVdsDLY308deDL8szs='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -606,6 +606,11 @@ h2{font-size:24px}
 .m-l{font:600 13px var(--font-d);fill:var(--muted)}
 @media (max-width:560px){.pcard .tot .tv{font-size:46px}.hero h1{font-size:34px}.top .tt.brand b{font-size:25px;line-height:1.15}}
 .pv span{text-transform:none;letter-spacing:0;font-size:var(--fs-sm)}
+/* Accesibilidad (WCAG 2.1 AA): bordes de campos con contraste 3:1, títulos de programa como encabezados, leyenda que se parte */
+:root{--line-ctl:#7f939d}:root[data-theme="dark"]{--line-ctl:#6f8a99}
+.in-t,select.in-t,.search input,.fb textarea,.oa-t,.fr{border-color:var(--line-ctl)}
+.ph-h{margin:0;font:inherit;color:inherit;letter-spacing:normal}
+.ind-per .chip-lv,.kpi .chip-lv{white-space:normal}
 .trend svg text{font-family:var(--font)}
 </style>
 </head>
@@ -1804,8 +1809,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.15-2123';
-const APP_VER = '1.10';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.15-2134';
+const APP_VER = '1.11';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -2545,7 +2550,7 @@ function renderEditor() {
   <main class="wrap">
     ${renderHdr(hdrOpen)}
     <div class="tools">
-      <div class="search">${ICON.search}<input type="search" id="q" placeholder="Buscar medida o programa…" value="${esc(S.q)}" data-act="q" autocomplete="off"></div>
+      <div class="search">${ICON.search}<input type="search" id="q" aria-label="Buscar medida o programa" placeholder="Buscar medida o programa…" value="${esc(S.q)}" data-act="q" autocomplete="off"></div>
       <div class="filters" id="filters"></div>
       ${canMatrix() ? `<button class="btn sm" data-act="vista">${S.layout === 'matrix' ? 'Ver por frente' : 'Ver matriz'}</button>` : ''}
       <button class="btn sm ghost" data-act="expand">Expandir todo</button>
@@ -2566,9 +2571,9 @@ const campos = p => p.campos || ['inspectores', 'zona', 'fecha', 'contratista'];
 const PERS = { inspectores: 'inspectores', acompanamiento: 'acompanantes' };   // lista de la ficha -> memoria en Ajustes
 function personasHTML(kind, label, hint, ph) {
   const I = S.insp, L = I[kind] || [], mem = A[PERS[kind]] || [];
-  return `<div class="f s4"><span class="lbl">${label}</span>
+  return `<div class="f s4"><span class="lbl" id="lbl-${kind}">${label}</span>
     <div class="chips">${L.map((n, i) => `<span class="chip">${esc(n)}<button data-act="delpers" data-kind="${kind}" data-i="${i}" aria-label="Quitar">×</button></span>`).join('') || `<span class="hint">${hint}</span>`}</div>
-    <div class="addrow"><input class="in-t" id="in-${kind}" data-kind="${kind}" list="dl-${kind}" placeholder="${esc(ph)}" maxlength="120" autocomplete="off">
+    <div class="addrow"><input class="in-t" id="in-${kind}" aria-labelledby="lbl-${kind}" data-kind="${kind}" list="dl-${kind}" placeholder="${esc(ph)}" maxlength="120" autocomplete="off">
     <button class="btn" data-act="addpers" data-kind="${kind}">Agregar</button></div>
     <datalist id="dl-${kind}">${mem.filter(n => !L.includes(n)).map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>`;
 }
@@ -2607,7 +2612,7 @@ function renderStrip() {
     const done = s.vac === 0 && s.sinObs === 0 && s.pre === 0;
     const filled = (s.total - s.vac) / s.total * 100;
     const tag = tabs ? 'button' : 'div';
-    return `<${tag} class="fchip ${tabs && s.f.id === S.tab ? 'on' : ''} ${done ? 'done' : ''}" ${tabs ? `data-act="tab" data-f="${esc(s.f.id)}"` : ''}>
+    return `<${tag} class="fchip ${tabs && s.f.id === S.tab ? 'on' : ''} ${done ? 'done' : ''}" ${tabs ? `data-act="tab" data-f="${esc(s.f.id)}" aria-pressed="${s.f.id === S.tab}"` : ''}>
       <b>${esc(fName(I, s.f.id))}</b><span class="p ${lvc(s.pct)}" title="${(nivel(s.pct) || {}).t || ''}">${pctP(I, s.pct)}</span>
       <small>${done ? 'Completo' : [s.vac ? `${s.vac === 1 ? 'falta' : 'faltan'} ${s.vac}` : '', s.sinObs ? `${s.sinObs} sin obs.` : '', s.pre ? `${s.pre} N/A por revisar` : ''].filter(Boolean).join(' · ')}</small><i style="width:${filled}%"></i></${tag}>`;
   }).join('') + `<div class="mc"><span>Cumplimiento total</span><b class="${lvc(mc)}">${pctP(I, mc)}</b>${chipLv(mc)}</div>
@@ -2636,7 +2641,7 @@ function renderFilters() {
   const c = f => ks.filter(k => cond(k, f)).length;
   const F = [['todas', 'Todas', null], ['pend', 'Sin responder', c('pend')], ['no', 'Con “No”', c('no')], ['pre', 'N/A por revisar', c('pre')]];
   $('#filters').innerHTML = F.map(([v, l, n]) => (v === 'pre' && !n && S.filtro !== 'pre') ? '' :
-    `<button class="flt ${S.filtro === v ? 'on' : ''}" data-act="filtro" data-v="${v}">${l}${n != null ? `<span class="c">${n}</span>` : ''}</button>`).join('');
+    `<button class="flt ${S.filtro === v ? 'on' : ''}" data-act="filtro" data-v="${v}" aria-pressed="${S.filtro === v}">${l}${n != null ? `<span class="c">${n}</span>` : ''}</button>`).join('');
 }
 
 /* Resalta las palabras buscadas en una sola pasada sobre el texto original (acentos incluidos) */
@@ -2704,9 +2709,9 @@ function renderProgs() {
       body = tools + (tabs ? '' : '<div class="mxwrap">') + rows + (tabs ? '' : '</div>');
     }
     html += `<section class="card prog ${open ? 'open' : ''}" id="prog-${pi}">
-      <button class="ph" data-act="toggle" data-pi="${pi}">${ICON.chev}
+      <h2 class="ph-h"><button class="ph" data-act="toggle" data-pi="${pi}" aria-expanded="${open}">${ICON.chev}
         <span class="pn">${pr.num ? esc(pr.num) + " · " : ""}${hl(pr.nombre)}<small>${pr.medidas.length} medidas</small></span>
-        <span class="badges" id="pb-${pi}">${progBadges(pi)}</span></button>
+        <span class="badges" id="pb-${pi}">${progBadges(pi)}</span></button></h2>
       <div class="pb">${body}</div></section>`;
   });
   $('#progs').innerHTML = anyVis ? html : `<div class="card nores">No hay medidas que coincidan con la búsqueda o el filtro.</div>`;
@@ -2744,7 +2749,7 @@ function findHTML(k, f) {
   return `<div class="fb" data-k="${k}" data-f="${F}">
     <div class="fb-h"><span class="tag">No cumple · <span data-fn="${F}">${esc(fName(I, f))}</span></span>
       ${others.map(o => `<button class="btn sm" data-act="copyobs" data-k="${k}" data-f="${F}" data-from="${esc(o.id)}">Igual que ${esc(fName(I, o.id))}</button>`).join('')}</div>
-    <textarea data-act="obs" data-k="${k}" data-f="${F}" maxlength="4000" aria-label="Observación del hallazgo en ${esc(fName(I, f))}" class="${clean(txt) ? '' : 'miss'}" placeholder="Describe el hallazgo en ${esc(fName(I, f))}…">${esc(txt)}</textarea>
+    <textarea data-act="obs" data-k="${k}" data-f="${F}" maxlength="4000" aria-label="Observación del hallazgo en ${esc(fName(I, f))}" class="${clean(txt) ? '' : 'miss'}" aria-invalid="${!clean(txt)}" placeholder="Describe el hallazgo en ${esc(fName(I, f))}…">${esc(txt)}</textarea>
     <div class="sugs" id="sg-${kid(k)}-${F}">${sugsHTML(k, f, txt)}</div>
     <div class="photos">
       ${fotos.map(ph => `<span class="thw"><button class="th" data-act="annot" data-id="${esc(ph.id)}" title="Toca para marcar con flecha o círculo"><img src="${esc(ph.thumb)}" alt="">${ph.shapes.length ? '<span class="ed">marcada</span>' : ''}</button><button class="x" data-act="delfoto" data-id="${esc(ph.id)}" aria-label="Eliminar foto">×</button></span>`).join('')}
@@ -4244,7 +4249,7 @@ document.addEventListener('input', e => {
   if (d.act === 'q') { S.q = t.value; renderProgs(); renderFilters(); }
   else if (d.act === 'obs') {
     (I.obs[d.k] ||= {})[d.f] = t.value;
-    t.classList.toggle('miss', !clean(t.value));
+    t.classList.toggle('miss', !clean(t.value)); t.setAttribute('aria-invalid', !clean(t.value));
     const pv = document.getElementById('pv-' + kid(d.k));
     if (pv) { const tmp = document.createElement('div'); tmp.innerHTML = pvHTML(d.k); pv.replaceWith(tmp.firstElementChild); }
     const sg = document.getElementById(`sg-${kid(d.k)}-${d.f}`); if (sg) sg.innerHTML = sugsHTML(d.k, d.f, t.value);
