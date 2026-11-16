@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-b0fQMC3Gs+Gczx/1fY0mx1E11BjJhKFdjyKngCXj05I='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-FDQMPn80lc7tf6fbcLd8iyeABCyTimIYj0t3Ec1rG/0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1819,8 +1819,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.16-0516';
-const APP_VER = '1.12';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.16-0534';
+const APP_VER = '1.13';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -1941,7 +1941,9 @@ function setTheme(t) {
   document.documentElement.dataset.theme = t;
   try { localStorage.setItem('fcsa-theme', t); } catch {}
   // Color de la barra del sistema (Android y Safari): el mismo de la franja de la hora
-  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = t === 'dark' ? '#0d1a24' : '#1c1f86';
+  // En la app instalada en iPhone, cambiar el content de la meta no repinta la franja: hay que reemplazar la etiqueta
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) { const n = m.cloneNode(); n.content = t === 'dark' ? '#0d1a24' : '#1c1f86'; m.replaceWith(n); }
 }
 
 /* ---------------- Estado ---------------- */
