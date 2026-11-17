@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-ljGsVYV4llVDmxiLXu3fFjfWRfocY/QKw/DcgzR/bW8='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-AUHn4Yxtp7Us+6uug92nfHf/cibbJ2gjLz7U+a012cQ='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1819,7 +1819,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.16-1600';
+const APP_VERSION = '2026.11.17-1033';
 const APP_VER = '1.14';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -2391,7 +2391,7 @@ function tarjetaProyecto(p, aviso) {
   const contr = (L[0] && L[0].contratista) || (p.contratistas || [])[0] || '';
   const nv = ult ? nivel(mc) : null, dU = ult && ult.fecha ? new Date(ult.fecha + 'T12:00:00') : null;
   const pctT = ult ? pctP(ult, mc) : '';
-  const voz = `${esc(p.nombre)}: ${ult ? `${pctT}, ${nv.t}` : 'sin ficha completa'}; ${L.length} ficha${L.length === 1 ? '' : 's'}. Ver fichas`;
+  const voz = `${esc(p.nombre)}: ${ult ? `${pctT}, ${nv ? nv.t : 'sin porcentaje'}` : 'sin ficha completa'}; ${L.length} ficha${L.length === 1 ? '' : 's'}. Ver fichas`;
   return `<button class="pcard nv-${nv ? nv.k : 'none'}" data-act="proy" data-p="${esc(p.id)}" aria-label="${voz}">
     ${mira(ult ? mc : null)}
     <span class="pc">

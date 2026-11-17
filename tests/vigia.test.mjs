@@ -309,3 +309,12 @@ test('porcentajes con los decimales de cada proyecto', () => {
   assert.equal(run('pctTxt')(0.8567, 0), '86%');
   assert.equal(run('pctTxt')(null), '—');
 });
+
+test('inicio: una ficha completa toda en N/A no rompe la tarjeta del proyecto', () => {
+  const I = ficha({ fill: () => 'na' });
+  assert.equal(run('completa')(I), true);
+  run('S').list = [I];
+  const p = run('CATALOG').find(x => x.id === 'prudente');
+  assert.match(run('tarjetaProyecto')(p), /sin porcentaje/);
+  run('S').list = [];
+});
