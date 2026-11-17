@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-v3abdKivD5tsIMQGB/S+of776oCXuY4cyVrV7WgmTFw='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-dr1DNgCQUtW2BraQQFW4LVKlchSFhZtYJ9pte5VsqRA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2327,7 +2327,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.17-1151';
+const APP_VERSION = '2026.11.17-1154';
 const APP_VER = '1.15';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -4038,7 +4038,8 @@ async function construirPDF(I) {
 
   /* --- Hallazgos / Evidencias (por programa, nombre del frente bajo cada foto) --- */
   if (B) {
-    const FW = 200, FH = 150, PAD = 6, TS = 7, TLH = 9, TX = X0 + FW + 2 * PAD, TW = W - FW - 3 * PAD;
+    // Dos recuadros por fila: foto a la izquierda; plan, medida y observación a la derecha
+    const CW = W / 2, FW = 190, FH = 142, PAD = 5, TS = 6.8, TLH = 8.4, TW = CW - FW - 3 * PAD;
     const nuevaPag = () => { doc.addPage([PW, PH], 'portrait'); y = M; };
     let titulo = false;
     for (const f of I.frentes) {
@@ -4057,28 +4058,34 @@ async function construirPDF(I) {
       const lw = doc.getTextWidth(pdfTxt('Frente: '));
       font('normal', 8.5); doc.text(pdfTxt(fName(I, f.id)), X0 + 5 + lw, y + 12.3);
       y += 18;
+      const cajas = [];
       for (const hz of hs) {
-        // Texto de la derecha: plan, medida y observación
         font('bold', TS); const LP = doc.splitTextToSize(pdfTxt(hz.plan), TW);
         font('normal', TS); const LO = doc.splitTextToSize(pdfTxt(hz.t || ''), TW);
         const th = PAD + (LP.length + 1 + LO.length) * TLH + 4 + PAD;
-        for (const ph of (hz.fotos.length ? hz.fotos : [null])) {
-          const bh = Math.max(ph ? FH + 2 * PAD : 0, th);
-          if (y + bh > BOT) nuevaPag();
-          cell(X0, y, W, bh);
-          if (ph) {
-            const src = ph.composite || ph.orig, im = await loadImg(src);
+        (hz.fotos.length ? hz.fotos : [null]).forEach(ph => cajas.push({ hz, ph, LP, LO, h: Math.max(ph ? FH + 2 * PAD : 0, th) }));
+      }
+      for (let i = 0; i < cajas.length; i += 2) {
+        const fila = cajas.slice(i, i + 2), bh = Math.max(...fila.map(c => c.h));
+        if (y + bh > BOT) nuevaPag();
+        for (const [j, c] of fila.entries()) {
+          const x = X0 + j * CW;
+          cell(x, y, CW, bh);
+          if (c.ph) {
+            const src = c.ph.composite || c.ph.orig, im = await loadImg(src);
             const s = Math.min(FW / im.naturalWidth, FH / im.naturalHeight), w = im.naturalWidth * s, hh = im.naturalHeight * s;
-            const px = X0 + PAD + (FW - w) / 2, py = y + (bh - hh) / 2;
+            const px = x + PAD + (FW - w) / 2, py = y + (bh - hh) / 2;
             doc.addImage(src, 'JPEG', px, py, w, hh, undefined, 'FAST');
             doc.setDrawColor(60); doc.setLineWidth(0.4); doc.rect(px, py, w, hh, 'S'); doc.setDrawColor(0);
           }
+          const tx = c.ph ? x + FW + 2 * PAD : x + PAD;
           let ty = y + PAD + TLH - 1.5;
-          font('bold', TS); LP.forEach(l => { doc.text(l, TX, ty); ty += TLH; });
-          doc.text(pdfTxt(`Medida ${hz.num}`), TX, ty); ty += TLH + 4;
-          font('normal', TS); LO.forEach(l => { doc.text(l, TX, ty); ty += TLH; });
-          y += bh;
+          font('bold', TS); c.LP.forEach(l => { doc.text(l, tx, ty); ty += TLH; });
+          doc.text(pdfTxt(`Medida ${c.hz.num}`), tx, ty); ty += TLH + 4;
+          font('normal', TS); c.LO.forEach(l => { doc.text(l, tx, ty); ty += TLH; });
         }
+        if (fila.length === 1) cell(X0 + CW, y, CW, bh);
+        y += bh;
       }
     }
   }
