@@ -318,3 +318,12 @@ test('inicio: una ficha completa toda en N/A no rompe la tarjeta del proyecto', 
   assert.match(run('tarjetaProyecto')(p), /sin porcentaje/);
   run('S').list = [];
 });
+
+test('Burunga/PTAR AE: planes "1." y medidas "1.1" también en fichas guardadas sin esa numeración', () => {
+  const I = ficha({ projectId: 'ptar-ae' });
+  I.formato = plain(run('congelarFormato')(run('CATALOG').find(x => x.id === 'ptar-ae')));
+  I.formato.programas.forEach(pr => { delete pr.num; delete pr.numsTxt; });
+  const p = run('proj')(I);
+  assert.equal(p.programas[1].num, '2.');
+  assert.deepEqual(plain(p.programas[1].nums), ['2.1', '2.2', '2.3']);
+});

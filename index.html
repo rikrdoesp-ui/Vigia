@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-6o8D6q5j9JM6Tl9QURl3XjpCnTYEHkHL/LCGcqw3KMs='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-v3abdKivD5tsIMQGB/S+of776oCXuY4cyVrV7WgmTFw='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2327,7 +2327,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.17-1143';
+const APP_VERSION = '2026.11.17-1151';
 const APP_VER = '1.15';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -2475,7 +2475,9 @@ function proj(insp) {
   const base = CATALOG.find(p => p.id === insp.projectId) || CATALOG[0], f = insp.formato;
   if (!f) return base;
   let m = _formas.get(f);
-  if (!m) { m = { ...base, ...f, programas: f.programas.map(pr => numerar({ ...pr, subs: { ...(pr.subs || {}) } })) }; _formas.set(f, m); }
+  if (!m) {
+    m = { ...base, ...f, programas: f.programas.map(pr => numerar({ ...pr, subs: { ...(pr.subs || {}) } })) };
+    if (m.estiloPDF === 'burunga') m.programas.forEach((pr, pi) => { pr.num = `${pi + 1}.`; pr.nums = pr.medidas.map((x, mi) => `${pi + 1}.${mi + 1}`); }); _formas.set(f, m); }
   return m;
 }
 /* Equivalencias entre el formulario de una ficha y el catálogo actual, por nombre y texto (no por posición).
@@ -4036,7 +4038,7 @@ async function construirPDF(I) {
 
   /* --- Hallazgos / Evidencias (por programa, nombre del frente bajo cada foto) --- */
   if (B) {
-    const PHH = 130, GAP = 6, TS = 6.8, TLH = 8.6, MAXW = W * 0.6;
+    const FW = 200, FH = 150, PAD = 6, TS = 7, TLH = 9, TX = X0 + FW + 2 * PAD, TW = W - FW - 3 * PAD;
     const nuevaPag = () => { doc.addPage([PW, PH], 'portrait'); y = M; };
     let titulo = false;
     for (const f of I.frentes) {
@@ -4045,40 +4047,37 @@ async function construirPDF(I) {
         const k = pi + '.' + mi;
         if (ans(I, k, f.id) !== 'no') return;
         const fotos = S.fotos.filter(ph => ph.key === k && ph.frontId === f.id).sort((x, z) => ((x.pos ?? 1e9) - (z.pos ?? 1e9)) || (x.orden - z.orden));
-        hs.push({ num: pr.nums[mi], t: obsOf(I, k, f.id), fotos });
+        hs.push({ plan: (pr.num ? pr.num + ' ' : '') + pr.nombre, num: pr.nums[mi], t: obsOf(I, k, f.id), fotos });
       }));
       if (!hs.length) continue;
-      if (!titulo) { if (y + 80 > BOT) nuevaPag(); y += 18; font('bold', 7.8); doc.text(pdfTxt(p.evidenciaTxt || 'Hallazgos/Evidencias'), PW / 2, y, { align: 'center' }); y += 4; titulo = true; }
-      if (y + 60 > BOT) nuevaPag();
-      y += 8; cell(X0, y, W, 14, PC.gray); ctext(fName(I, f.id), X0, y, W, 14, 'bold', 7.2, 'left'); y += 14;
+      if (!titulo) { if (y + 80 > BOT) nuevaPag(); y += 18; font('bold', 8); doc.text(pdfTxt(p.evidenciaTxt || 'Hallazgos/Evidencias'), PW / 2, y, { align: 'center' }); y += 6; titulo = true; }
+      if (y + 18 + FH > BOT) nuevaPag();
+      y += 8; cell(X0, y, W, 18, PC.gray);
+      font('bold', 8.5); doc.text(pdfTxt('Frente:'), X0 + 5, y + 12.3);
+      const lw = doc.getTextWidth(pdfTxt('Frente: '));
+      font('normal', 8.5); doc.text(pdfTxt(fName(I, f.id)), X0 + 5 + lw, y + 12.3);
+      y += 18;
       for (const hz of hs) {
-        font('normal', TS);
-        const L = doc.splitTextToSize(pdfTxt(hz.t || ''), W - 34);
-        if (y + 8 + L.length * TLH + (hz.fotos.length ? 60 : 0) > BOT) nuevaPag();
-        y += 8 + TLH;
-        font('bold', TS); doc.text(pdfTxt(String(hz.num)), X0 + 2, y);
-        font('normal', TS); L.forEach((l, i) => doc.text(l, X0 + 30, y + i * TLH));
-        y += (L.length - 1) * TLH + 5;
-        const items = [];
-        for (const ph of hz.fotos) {
-          const src = ph.composite || ph.orig, im = await loadImg(src), ar = im.naturalWidth / im.naturalHeight;
-          let w = PHH * ar, hh = PHH;
-          if (w > MAXW) { w = MAXW; hh = w / ar; }   // fotos panorámicas: se reduce la altura, no se deforman
-          items.push({ src, w, h: hh });
-        }
-        const filas = []; let fila = [], fw = 0;
-        items.forEach(it => { if (fila.length && fw + GAP + it.w > W - 30) { filas.push(fila); fila = []; fw = 0; } fila.push(it); fw += (fila.length > 1 ? GAP : 0) + it.w; });
-        if (fila.length) filas.push(fila);
-        for (const r of filas) {
-          if (y + PHH > BOT) nuevaPag();
-          let x = X0 + 30;
-          r.forEach(it => {
-            const yy = y + (PHH - it.h) / 2;
-            doc.addImage(it.src, 'JPEG', x, yy, it.w, it.h, undefined, 'FAST');
-            doc.setDrawColor(60); doc.setLineWidth(0.4); doc.rect(x, yy, it.w, it.h, 'S');
-            x += it.w + GAP;
-          });
-          y += PHH + GAP;
+        // Texto de la derecha: plan, medida y observación
+        font('bold', TS); const LP = doc.splitTextToSize(pdfTxt(hz.plan), TW);
+        font('normal', TS); const LO = doc.splitTextToSize(pdfTxt(hz.t || ''), TW);
+        const th = PAD + (LP.length + 1 + LO.length) * TLH + 4 + PAD;
+        for (const ph of (hz.fotos.length ? hz.fotos : [null])) {
+          const bh = Math.max(ph ? FH + 2 * PAD : 0, th);
+          if (y + bh > BOT) nuevaPag();
+          cell(X0, y, W, bh);
+          if (ph) {
+            const src = ph.composite || ph.orig, im = await loadImg(src);
+            const s = Math.min(FW / im.naturalWidth, FH / im.naturalHeight), w = im.naturalWidth * s, hh = im.naturalHeight * s;
+            const px = X0 + PAD + (FW - w) / 2, py = y + (bh - hh) / 2;
+            doc.addImage(src, 'JPEG', px, py, w, hh, undefined, 'FAST');
+            doc.setDrawColor(60); doc.setLineWidth(0.4); doc.rect(px, py, w, hh, 'S'); doc.setDrawColor(0);
+          }
+          let ty = y + PAD + TLH - 1.5;
+          font('bold', TS); LP.forEach(l => { doc.text(l, TX, ty); ty += TLH; });
+          doc.text(pdfTxt(`Medida ${hz.num}`), TX, ty); ty += TLH + 4;
+          font('normal', TS); LO.forEach(l => { doc.text(l, TX, ty); ty += TLH; });
+          y += bh;
         }
       }
     }
