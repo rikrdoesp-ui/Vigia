@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-7vgK7X6dji9Io299+I4QA+k5ChZdxBeQ7PNZY8RqXXk='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-+Gon6RD9/Zc34y3OIrW4YNPGbRXb3zyO34oE40s/PUo='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2329,7 +2329,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.17-1212';
+const APP_VERSION = '2026.11.17-1214';
 const APP_VER = '1.16';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -2857,26 +2857,31 @@ function ruta() {
 }
 function marcarRuta() {
   const r = ruta();
-  if (S.navHist || location.hash === r) return;
-  history.pushState(null, '', r || location.pathname + location.search);
+  if (S.navHist > 0 || location.hash === r) return;
+  // Si la pantalla nueva es la anterior del historial (botones "Volver" de la app), se retrocede en vez de apilar otra
+  if (history.state && history.state.de === r) { S.saltarPop = true; history.back(); return; }
+  history.pushState({ de: location.hash }, '', r || location.pathname + location.search);
 }
 async function irA(hash) {
-  S.navHist = true;
+  S.navHist = (S.navHist || 0) + 1;   // contador: dos "Atrás" seguidos no dejan entradas de más
   try {
-    const m = /^#(f|p)=(.+)$/.exec(hash || ''), v = m ? decodeURIComponent(m[2]) : null;
-    if (m && m[1] === 'f' && S.list.some(x => x && x.id === v)) { await abrir(v); return; }
+    const m = /^#(f|p)=(.+)$/.exec(hash || '');
+    let v = null;
+    try { v = m ? decodeURIComponent(m[2]) : null; } catch { v = null; }   // dirección mal escrita: se trata como inexistente
+    if (m && m[1] === 'f' && v && S.list.some(x => x && x.id === v)) { await abrir(v); return; }
     if (hash === '#ind') { renderInd(); window.scrollTo(0, 0); return; }
     if (hash === '#priv') { renderPriv(); window.scrollTo(0, 0); return; }
     S.homeProj = m && m[1] === 'p' ? v : null;
     renderHome(); window.scrollTo(0, 0);
   } finally {
-    S.navHist = false;
+    S.navHist--;
     // Una dirección que ya no existe (ficha borrada) se corrige sin agregar otra entrada al historial
-    if (location.hash !== ruta()) history.replaceState(null, '', ruta() || location.pathname + location.search);
+    if (!S.navHist && location.hash !== ruta()) history.replaceState(history.state, '', ruta() || location.pathname + location.search);
   }
 }
 window.addEventListener('popstate', async () => {
-  if (S.busy) { history.pushState(null, '', ruta() || location.pathname + location.search); toast('Espera: todavía se están guardando fotos.'); return; }
+  if (S.saltarPop) { S.saltarPop = false; return; }   // retroceso hecho por la propia app: la pantalla ya está dibujada
+  if (S.busy) { history.pushState({ de: location.hash }, '', ruta() || location.pathname + location.search); toast('Espera: todavía se están guardando fotos.'); return; }
   await flush(); S.list = await DB.all('inspecciones');
   await irA(location.hash);
 });
