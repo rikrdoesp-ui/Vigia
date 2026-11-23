@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-XIZi2lJD/uz1rN/BVY6ivDeF1ae85kaHwLRhjvMDGXU='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-kewpfwbgmmTtXSv3WZ+Y49s1gztkNDoQuyQ3c3j0Kws='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="color-scheme" content="light dark">
@@ -2503,8 +2503,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.23-1547';
-const APP_VER = '1.20';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.23-1557';
+const APP_VER = '1.21';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const behav = () => (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');   // desplazamiento animado solo si el usuario lo admite
@@ -4387,7 +4387,7 @@ async function construirPDF(I) {
           if (fitH >= 100) hRow = fitH;
           else { doc.addPage([PW, PH], 'portrait'); y = M; titled = true; }
         }
-        if (titled) { y += 10; font('bold', 6.7); doc.text(pdfTxt(g.nombre), X0 + 20, y); y += 3; }
+        if (titled) { y += 10; font('bold', 6.7); doc.text(pdfTxt(g.nombre), X0, y); y += 3; }   // alineado con el borde izquierdo de la primera foto
         const k = hRow / PHH;
         let x = X0;
         r.forEach(it => {
