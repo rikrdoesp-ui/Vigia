@@ -2,9 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-1pq8CEQj0ixcu/T8FFM7d3pmTZ/BB+I6s6WSDiqklaA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-QIwqPHLqCw/YF3NoYEugX7WryBsPFV8cFsSTQGc1sl0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
+<meta name="color-scheme" content="light dark">
+<script>/* Tema antes del primer pintado (sin destello). Una sola vez: el 'light' que las versiones anteriores guardaban solas se borra para seguir al sistema; 'dark' sí fue elegido */try{var d=document.documentElement,t=localStorage.getItem('fcsa-theme');if(!localStorage.getItem('fcsa-theme-v2')){if(t==='light'){localStorage.removeItem('fcsa-theme');t=null}localStorage.setItem('fcsa-theme-v2','1')}d.dataset.theme=t==='light'||t==='dark'?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}</script>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Vigía: llenado de las Fichas de Control y Seguimiento Ambiental (FCSA) con fotos, PDF e indicadores de cumplimiento. Funciona sin internet.">
 <meta name="mobile-web-app-capable" content="yes">
@@ -518,7 +520,8 @@ body{min-height:100vh;background:
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   :root,:root[data-theme="dark"]{--glass:var(--surface);--glass-card:var(--surface)}
 }
-@media (prefers-reduced-motion:reduce){.btn,.flt,.b,.fchip{transition:none}.btn:active,.flt:active,.b:active,.fchip:active{transform:none}}
+/* Movimiento reducido: se quitan solo los desplazamientos (escala, giro de flechas, barra que crece); los cambios de color siguen suaves */
+@media (prefers-reduced-motion:reduce){.btn,.flt{transition:box-shadow .15s ease,border-color .15s ease,background .15s ease}.btn:active,.flt:active,.b:active,.fchip:active{transform:none}.hdr summary .chev,.ph .chev,.fchip i{transition:none}}
 
 /* Franja de la hora y la batería (iPhone con la app instalada, y pantallas con muesca).
    La app se dibuja detrás de esa franja y la pinta: azul del programa en modo claro, oscuro en modo oscuro.
@@ -580,6 +583,7 @@ h2{font-size:24px}
 .fchip.on{box-shadow:0 0 0 2px var(--pri)}
 .md{border-radius:14px}
 #toast{width:max-content;max-width:min(90vw,520px);border-radius:14px;transition:opacity .2s,transform .2s}
+@media (prefers-reduced-motion:reduce){#toast{transition:opacity .2s;transform:translateX(-50%)}#toast.show{transform:translateX(-50%)}}
 .seg.empty{background:transparent}
 .b{background:var(--surface)}
 .ptools,.mxh{background:var(--surface2)}
@@ -614,7 +618,8 @@ h2{font-size:24px}
 .ph-h{margin:0;font:inherit;color:inherit;letter-spacing:normal}
 .ind-per .chip-lv,.kpi .chip-lv{white-space:normal}
 /* 1. El navegador dibuja sus controles (fechas, listas, barras de desplazamiento) en el mismo modo que la app */
-:root{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
+:root{color-scheme:light dark}:root[data-theme="light"]{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
+h1[tabindex="-1"]:focus{outline:none}   /* el h1 recibe el foco al cambiar de vista; no es un control */
 /* 2. Ventanas como <dialog> a pantalla completa: el fondo oscuro es ::backdrop y la página de atrás no se desplaza */
 dialog.ov{width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;background:transparent;color:inherit;overflow:hidden;-webkit-backdrop-filter:none;backdrop-filter:none;overscroll-behavior:contain}
 dialog.ov:not([open]){display:none}
@@ -2329,10 +2334,11 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.17-1345';
-const APP_VER = '1.17';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.23-1142';
+const APP_VER = '1.18';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
+const behav = () => (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');   // desplazamiento animado solo si el usuario lo admite
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid = (p = '') => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -2445,16 +2451,34 @@ async function loadAjustes() {
 }
 const saveAjuste = k => DB.put('ajustes', { k, v: A[k] });
 
-/* Tema claro / oscuro */
-function getTheme() { try { return localStorage.getItem('fcsa-theme') || 'light'; } catch { return 'light'; } }
-function setTheme(t) {
+/* Tema: sin valor guardado = el del sistema; 'light' o 'dark' guardado = fijo (los usuarios previos lo conservan) */
+let temaMem;   // elección de esta sesión (undefined = no se tocó): sirve aunque localStorage no deje escribir
+const mqOscuro = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+function getThemePref() { if (temaMem !== undefined) return temaMem; try { const v = localStorage.getItem('fcsa-theme'); return v === 'light' || v === 'dark' ? v : null; } catch { return temaMem; } }
+function getTheme() { return getThemePref() || (mqOscuro && mqOscuro.matches ? 'dark' : 'light'); }   // tema efectivo
+/* Pinta el tema efectivo: data-theme, color de la barra del sistema y el botón de la cabecera */
+function aplicarTema(ui = true) {
+  const t = getTheme();
   document.documentElement.dataset.theme = t;
-  try { localStorage.setItem('fcsa-theme', t); } catch {}
   // Color de la barra del sistema (Android y Safari): el mismo de la franja de la hora
   // En la app instalada en iPhone, cambiar el content de la meta no repinta la franja: hay que reemplazar la etiqueta
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) { const n = m.cloneNode(); n.content = t === 'dark' ? '#0d1a24' : '#1c1f86'; m.replaceWith(n); }
+  if (!ui) return;   // en la carga inicial ICON y los controles aún no existen
+  const b = document.querySelector('[data-act="theme"]');
+  if (b) { b.innerHTML = t === 'dark' ? ICON.sun : ICON.moon; b.setAttribute('aria-label', t === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'); }
+  const sel = document.getElementById('s-tema'); if (sel) sel.value = getThemePref() || 'system';   // selector de Ajustes, si está abierto
 }
+/* t: 'light' | 'dark' | null (volver al sistema) */
+function setTheme(t) {
+  temaMem = t || null;
+  try { t ? localStorage.setItem('fcsa-theme', t) : localStorage.removeItem('fcsa-theme'); } catch {}
+  aplicarTema();
+}
+// Aplicarlo ya aquí (antes de dibujar nada) evita el destello; el cambio del sistema solo cuenta mientras no haya un tema fijo
+aplicarTema(false);
+if (mqOscuro && mqOscuro.addEventListener) mqOscuro.addEventListener('change', () => { if (!getThemePref()) aplicarTema(); });
+window.addEventListener('storage', e => { if (e.key === 'fcsa-theme' || e.key === null) aplicarTema(); });   // otra pestaña: se aplica sin volver a escribir
 
 /* ---------------- Estado ---------------- */
 const S = {
@@ -2499,7 +2523,7 @@ function claveEn(I, p, k) {
 }
 function keysOf(p) { const ks = []; p.programas.forEach((pr, pi) => pr.medidas.forEach((m, mi) => ks.push(pi + '.' + mi))); return ks; }
 const VALID = { si: 1, no: 1, na: 1 };
-const ans = (I, k, f) => { const v = (I.answers[k] || {})[f]; return VALID[v] ? v : ''; };
+const ans = (I, k, f) => { const v = (I.answers[k] || {})[f]; return Object.hasOwn(VALID, v) ? v : ''; };
 const obsOf = (I, k, f) => clean((I.obs[k] || {})[f]);
 const isPre = (I, k, f) => !!(I.prefill[k] && I.prefill[k][f]);
 const fotosDe = (k, f) => S.fotos.filter(p => p.key === k && p.frontId === f).sort((a, b) => a.orden - b.orden);
@@ -2683,6 +2707,15 @@ function pedirTexto(title, label, ph, okLbl) {
 function loadImg(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('No se pudo leer la imagen')); i.src = src; });
 }
+/* Cede el hilo al navegador para que la pantalla siga respondiendo: scheduler.yield() donde exista (Safari aún no), si no setTimeout.
+   plazo() da una función que solo cede cuando pasaron ~50 ms desde la última vez (el límite de una tarea larga). */
+const ceder = () => (globalThis.scheduler?.yield ? scheduler.yield() : new Promise(r => setTimeout(r, 0)));
+const plazo = () => { let t = performance.now() + 50; return async () => { if (performance.now() >= t) { await ceder(); t = performance.now() + 50; } }; };
+/* Topes al importar un respaldo (holgados: las fotos propias se guardan a ~1280 px, unos cientos de KB cada una) */
+const MAX_RESPALDO = 600 * 1048576;   // bytes del archivo .json
+const MAX_FOTO_STR = 15 * 1048576;    // caracteres del dataURL de una foto
+const MAX_FOTOS_FICHA = 500;          // fotos por ficha
+const MAX_PIXELES = 40e6;             // 40 MP: una imagen mayor se descarta antes de dibujarla
 /* Lado mayor de las fotos guardadas: en el PDF salen de ~5 cm de alto, 1280 px sobra y pesa ~40 % menos que 1600 */
 const FOTO_MAX = 1280;
 /* Al exportar, la versión marcada solo viaja si de verdad tiene marcas */
@@ -2855,8 +2888,18 @@ function ruta() {
   if (S.view === 'ind' || S.view === 'priv') return '#' + S.view;
   return S.homeProj ? '#p=' + encodeURIComponent(S.homeProj) : '';
 }
+/* Al cambiar de vista (no al redibujar la misma): título de la pestaña y foco al h1, para lectores de pantalla y teclado.
+   Va en una microtarea porque algunas vistas llaman a marcarRuta antes de dibujar. */
+function anunciarVista(enfocar) {
+  const h = $('#app h1'); if (!h) return;
+  document.title = 'Vigía · ' + clean(h.textContent);
+  if (enfocar) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
+}
 function marcarRuta() {
   const r = ruta();
+  const cambio = S.vistaRuta !== undefined && S.vistaRuta !== r;   // la primera pantalla (carga) no roba el foco
+  S.vistaRuta = r;
+  Promise.resolve().then(() => anunciarVista(cambio));
   if (S.navHist > 0 || location.hash === r) return;
   // Si la pantalla nueva es la anterior del historial (botones "Volver" de la app), se retrocede en vez de apilar otra
   if (history.state && history.state.de === r) { S.saltarPop = true; history.back(); return; }
@@ -2881,6 +2924,9 @@ async function irA(hash) {
 }
 window.addEventListener('popstate', async () => {
   if (S.saltarPop) { S.saltarPop = false; return; }   // retroceso hecho por la propia app: la pantalla ya está dibujada
+  // Con una ventana abierta, Atrás solo la cierra (cuenta como cancelar, igual que Esc) y se repone la entrada del historial
+  const abiertos = document.querySelectorAll('dialog[open]');
+  if (abiertos.length) { history.pushState({ de: location.hash }, '', ruta() || location.pathname + location.search); abiertos[abiertos.length - 1].close(); return; }
   if (S.busy) { history.pushState({ de: location.hash }, '', ruta() || location.pathname + location.search); toast('Espera: todavía se están guardando fotos.'); return; }
   await flush(); S.list = await DB.all('inspecciones');
   await irA(location.hash);
@@ -3413,7 +3459,7 @@ async function addFotos(files, k, f) {
   if (!files.length) return;
   const I = S.insp, inspId = I.id, fallas = [];
   S.busy++;
-  let hechas = 0;
+  let hechas = 0; const yp = plazo();
   toast(`Procesando ${files.length} foto${files.length > 1 ? 's' : ''}… no salgas de la ficha`);
   try {
     for (const file of files) {
@@ -3428,6 +3474,7 @@ async function addFotos(files, k, f) {
         const heic = /heic|heif/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
         fallas.push(file.name + (heic ? ' (formato HEIC: conviértela a JPG)' : ''));
       }
+      await yp();
     }
   } finally { S.busy--; }
   if (S.insp && S.insp.id === inspId) { touch(); updateRow(k); }
@@ -3528,13 +3575,13 @@ function dlgValidar(paraPDF) {
   });
 }
 function goTo(it) {
-  if (it.go === 'hdr') { const h = $('#hdr'); h.open = true; h.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (it.go === 'hdr') { const h = $('#hdr'); h.open = true; h.scrollIntoView({ behavior: behav(), block: 'start' }); return; }
   S.q = ''; S.filtro = 'todas';
   const pi = +it.k.split('.')[0]; S.open.add(pi);
   if (it.f && S.layout === 'tabs') S.tab = it.f;
   $('#q').value = ''; renderStrip(); renderFilters(); renderProgs();
   const el = document.getElementById(kid(it.k));
-  if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1700); }
+  if (el) { el.scrollIntoView({ behavior: behav(), block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1700); }
 }
 
 /* ---------------- Encabezado: acciones ---------------- */
@@ -3634,8 +3681,10 @@ function sanitizar(data) {
   const kf = keysOf(formato);
   const str = (v, max) => typeof v === 'string' ? v.slice(0, max) : '';
   const strs = (a, max) => Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).slice(0, 20).map(x => clean(x).slice(0, max)) : [];
-  const fmap = {};
-  const frentes = (Array.isArray(raw.frentes) ? raw.frentes : []).filter(f => f && typeof f.id === 'string').slice(0, MAX_FRENTES)
+  const fmap = Object.create(null);   // sin prototipo: un frontId como "constructor" o "__proto__" no devuelve nada heredado
+  // Un id de frente repetido se descarta (queda el primero): sus respuestas y fotos vienen con el mismo id y no se pueden separar sin mezclarlas
+  const vistos = new Set();
+  const frentes = (Array.isArray(raw.frentes) ? raw.frentes : []).filter(f => f && typeof f.id === 'string' && !vistos.has(f.id) && vistos.add(f.id)).slice(0, MAX_FRENTES)
     .map(f => { const id = SAFE_ID.test(f.id) ? f.id : uid('f'); fmap[f.id] = id; return { id, nombre: str(f.nombre, 60) }; });
   if (!frentes.length) throw new Error('no tiene frentes de trabajo');
   const answers = {}, obs = {}, prefill = {};
@@ -3643,7 +3692,7 @@ function sanitizar(data) {
     const a = raw.answers && raw.answers[k], o = raw.obs && raw.obs[k], pf = raw.prefill && raw.prefill[k];
     Object.keys(fmap).forEach(old => {
       const nf = fmap[old];
-      if (a && typeof a[old] === 'string') { const v = a[old].toLowerCase().replace('/', ''); if (VALID[v]) (answers[k] ||= {})[nf] = v; }
+      if (a && typeof a[old] === 'string') { const v = a[old].toLowerCase().replace('/', ''); if (Object.hasOwn(VALID, v)) (answers[k] ||= {})[nf] = v; }
       if (o && typeof o[old] === 'string') (obs[k] ||= {})[nf] = o[old].slice(0, 4000);
       if (pf && pf[old] === true) (prefill[k] ||= {})[nf] = true;
     });
@@ -3659,8 +3708,9 @@ function sanitizar(data) {
   };
   const ks = new Set(kf), num = v => Math.min(1, Math.max(0, +v || 0));
   const fotos = (Array.isArray(data.fotos) ? data.fotos : []).filter(ph => ph && ks.has(ph.key) && fmap[ph.frontId] &&
+      (ph.orig || '').length <= MAX_FOTO_STR && (ph.composite || '').length <= MAX_FOTO_STR && (ph.thumb || '').length <= MAX_FOTO_STR &&
       IMG_RE.test(ph.orig || '') && (ph.composite == null || IMG_RE.test(ph.composite)) && IMG_RE.test(ph.thumb || ''))
-    .map(ph => ({ id: uid('p'), inspId: I.id, key: ph.key, frontId: fmap[ph.frontId], orig: ph.orig, composite: ph.composite && ph.composite !== ph.orig ? ph.composite : null, thumb: ph.thumb,
+    .slice(0, MAX_FOTOS_FICHA).map(ph => ({ id: uid('p'), inspId: I.id, key: ph.key, frontId: fmap[ph.frontId], orig: ph.orig, composite: ph.composite && ph.composite !== ph.orig ? ph.composite : null, thumb: ph.thumb,
       shapes: (Array.isArray(ph.shapes) ? ph.shapes : []).slice(0, 50).map(s => ({ type: s && s.type === 'circle' ? 'circle' : 'arrow', x1: num(s && s.x1), y1: num(s && s.y1), x2: num(s && s.x2), y2: num(s && s.y2) })),
       orden: +ph.orden || 0, ...(Number.isInteger(ph.pos) ? { pos: ph.pos } : {}) }));
   return { I, fotos, omitidas: (Array.isArray(data.fotos) ? data.fotos.length : 0) - fotos.length };
@@ -3670,18 +3720,22 @@ function sanitizar(data) {
    imágenes fabricadas para trabar el PDF, avisos CVE-2025-57810 y CVE-2025-29907 de jsPDF).
    Las que el navegador no puede leer se descartan. */
 async function redibujarFotos(fotos) {
-  const ok = [];
+  const ok = [], yp = plazo();
+  // Una imagen con demasiados píxeles se rechaza antes de dibujarla (canvas enorme = memoria agotada)
+  const leer = async src => { const im = await loadImg(src); if (im.naturalWidth * im.naturalHeight > MAX_PIXELES) throw new Error('imagen demasiado grande'); return im; };
   for (const ph of fotos) {
     try {
-      const orig = toJpeg(await loadImg(ph.orig), FOTO_MAX, 0.85);
-      const composite = ph.composite && ph.composite !== ph.orig ? toJpeg(await loadImg(ph.composite), FOTO_MAX, 0.85) : null;
+      const orig = toJpeg(await leer(ph.orig), FOTO_MAX, 0.85);
+      const composite = ph.composite && ph.composite !== ph.orig ? toJpeg(await leer(ph.composite), FOTO_MAX, 0.85) : null;
       ok.push({ ...ph, orig, composite, thumb: toJpeg(await loadImg(composite || orig), 320, 0.7) });
-    } catch { /* imagen ilegible: no se importa */ }
+    } catch { /* imagen ilegible o excesiva: no se importa */ }
+    await yp();
   }
   return { fotos: ok, malas: fotos.length - ok.length };
 }
 const fechaHora = t => t ? new Date(t).toLocaleString('es-PA', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 async function importar(file) {
+  if (file.size > MAX_RESPALDO) { toast(`Ese respaldo pesa ${Math.round(file.size / 1048576)} MB y el máximo que se puede importar es ${MAX_RESPALDO / 1048576} MB. Exporta el respaldo por proyecto o por período en archivos más chicos.`, 9000); return; }
   let data;
   try { data = JSON.parse(await file.text()); } catch { toast('Ese archivo no es un respaldo de Vigía. Elige el archivo .json que exportaste desde la app.'); return; }
   if (!data || data.app !== APP_KEY) { toast('Ese archivo no es un respaldo de Vigía. Elige el archivo .json que exportaste desde la app.'); return; }
@@ -3715,6 +3769,8 @@ async function importar(file) {
 /* ---------------- Ajustes ---------------- */
 function dlgAjustes() {
   const body = () => `<div class="sett">
+    <h3>Apariencia</h3>
+    <label class="f"><span class="lbl">Tema</span><select class="in-t" id="s-tema"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
     <h3>Firma</h3>
     ${A.firma ? `<img class="firma" src="${A.firma}" alt="Firma"><div class="addrow" style="margin-top:8px">` : '<p class="mb-8 hint">Carga una imagen de tu firma (PNG con fondo transparente o JPG con fondo blanco).</p><div class="addrow">'}
       <span class="btn sm upl">${A.firma ? 'Cambiar firma' : 'Cargar firma'}<input type="file" accept="image/*" id="s-firma" aria-label="Cargar imagen de firma"></span>
@@ -3738,6 +3794,8 @@ function dlgAjustes() {
     onMount: (ov) => {
       const paint = () => {
         $('#s-body', ov).innerHTML = body();
+        const st = $('#s-tema', ov); st.value = getThemePref() || 'system';
+        st.onchange = () => { setTheme(st.value === 'system' ? null : st.value); };
         const ff = $('#s-firma', ov);
         ff.onchange = async () => {
           const f = ff.files[0]; if (!f) return;
@@ -3802,7 +3860,7 @@ function fotosPDF(I) {
 }
 
 async function construirPDF(I) {
-  const { jsPDF } = window.jspdf;
+  const { jsPDF } = window.jspdf, yp = plazo();
   const p = proj(I), nf = I.frentes.length, dec = p.decimales ?? 1;
   const PW = 792, PH = 1224, M = 36, W = PW - 2 * M, BOT = PH - 46;
   const doc = new jsPDF({ unit: 'pt', format: [PW, PH], orientation: 'portrait', compress: true });
@@ -4110,6 +4168,7 @@ async function construirPDF(I) {
         (hz.fotos.length ? hz.fotos : [null]).forEach(ph => cajas.push({ hz, ph, LP, LO, h: Math.max(ph ? FH + 2 * PAD : 0, th) }));
       }
       for (let i = 0; i < cajas.length; i += 2) {
+        await yp();
         const fila = cajas.slice(i, i + 2), bh = Math.max(...fila.map(c => c.h));
         if (y + bh > BOT) nuevaPag();
         for (const [j, c] of fila.entries()) {
@@ -4141,6 +4200,7 @@ async function construirPDF(I) {
     for (const g of groups) {
       const items = [];
       for (const ph of g.list) {
+        await yp();
         const src = ph.composite || ph.orig, im = await loadImg(src), a = im.naturalWidth / im.naturalHeight;
         let w = PHH * a, h = PHH;
         if (w > MAXW) { w = MAXW; h = w / a; }          // fotos panorámicas: se reduce la altura, no se deforman
@@ -4537,7 +4597,7 @@ function renderInd() {
   S.indData = d;
   $$('.trend circle[data-mes]').forEach(c => c.addEventListener('click', () => {
     const r = document.getElementById('mes-' + c.dataset.mes); if (!r) return;
-    r.scrollIntoView({ behavior: 'smooth', block: 'center' }); r.classList.add('flash'); setTimeout(() => r.classList.remove('flash'), 1700);
+    r.scrollIntoView({ behavior: behav(), block: 'center' }); r.classList.add('flash'); setTimeout(() => r.classList.remove('flash'), 1700);
   }));
 }
 
@@ -4806,10 +4866,13 @@ async function exportarProyecto(pid, conFotos, desde = '', hasta = '') {   // pi
 async function importarVarias(data) {
   const raws = data.inspecciones.slice(0, 500), fotosAll = Array.isArray(data.fotos) ? data.fotos : [];
   const ok = []; let malas = 0;
-  raws.forEach(raw => {
-    try { ok.push(sanitizar({ inspeccion: raw, fotos: fotosAll.filter(f => f && raw && f.inspId === raw.id) })); }
+  const porInsp = new Map(), yp = plazo();   // fotos agrupadas una sola vez por ficha (antes se recorrían todas por cada ficha)
+  for (const f of fotosAll) if (f) { const l = porInsp.get(f.inspId); l ? l.push(f) : porInsp.set(f.inspId, [f]); }
+  for (const raw of raws) {
+    try { ok.push(sanitizar({ inspeccion: raw, fotos: (raw && porInsp.get(raw.id)) || [] })); }
     catch { malas++; }
-  });
+    await yp();
+  }
   if (!ok.length) { toast('No se puede importar: el respaldo no tiene fichas válidas.'); return; }
   const existen = ok.filter(r => S.list.some(x => x.id === r.I.id));
   let modo = 'reemplazar';
@@ -4827,6 +4890,7 @@ async function importarVarias(data) {
     try { await DB.guardarFicha(r.I, rd.fotos, ex); }
     catch (e) { console.error(e); fallo = e; break; }
     n++; nf += rd.fotos.length; hechas.push(r.I.id);
+    await yp();
   }
   if (hechas.length) await marcarRespaldo(hechas);
   S.list = await DB.all('inspecciones');
@@ -4986,7 +5050,6 @@ window.addEventListener('appinstalled', () => { installEvt = null; toast('Vigía
 const instalada = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 
 (async function init() {
-  setTheme(getTheme());
   try {
     await DB.open();
     await loadAjustes();

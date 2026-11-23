@@ -14,7 +14,7 @@ assert.ok(app, 'no se encontró el script de la app en index.html');
 // Navegador mínimo: lo justo para que el script cargue sin tocar IndexedDB ni el DOM real.
 const dummy = new Proxy(function () {}, { get: (t, k) => (k === Symbol.toPrimitive ? () => '' : dummy), apply: () => dummy, set: () => true });
 const ctx = vm.createContext({
-  console, setTimeout, clearTimeout, URL, TextEncoder, Blob, Date, Math, JSON, Intl,
+  console, setTimeout, clearTimeout, performance, URL, TextEncoder, Blob, Date, Math, JSON, Intl,
   document: { addEventListener() {}, querySelector: () => dummy, querySelectorAll: () => [], documentElement: { dataset: {} }, visibilityState: 'visible' },
   window: { addEventListener() {}, innerWidth: 1280, matchMedia: () => ({ matches: false }) },
   location: { protocol: 'file:', hostname: '' },
@@ -326,4 +326,72 @@ test('Burunga/PTAR AE: planes "1." y medidas "1.1" también en fichas guardadas 
   const p = run('proj')(I);
   assert.equal(p.programas[1].num, '2.');
   assert.deepEqual(plain(p.programas[1].nums), ['2.1', '2.2', '2.3']);
+});
+
+/* ---------- Importación de respaldos: robustez ---------- */
+const IMG_OK = 'data:image/jpeg;base64,AAAA';
+
+test('respaldo: claves heredadas ("constructor", "__proto__") no pasan como respuesta ni como frente', () => {
+  assert.equal(run('ans')({ answers: { '0.0': { f1: 'constructor' } } }, '0.0', 'f1'), '');
+  assert.equal(run('ans')({ answers: { '0.0': { f1: 'si' } } }, '0.0', 'f1'), 'si');
+  const raw = ficha(), fid = raw.frentes[0].id;
+  raw.answers['0.0'][fid] = 'constructor';
+  const foto = frontId => ({ key: '0.0', frontId, orig: IMG_OK, composite: null, thumb: IMG_OK });
+  const { I, fotos } = run('sanitizar')({ inspeccion: raw, fotos: [foto('constructor'), foto('__proto__'), foto(fid)] });
+  assert.equal(I.answers['0.0'], undefined);
+  assert.equal(fotos.length, 1);
+});
+
+test('respaldo: un id de frente repetido se descarta y no mezcla datos', () => {
+  const raw = ficha({ frentes: ['A'] }), fid = raw.frentes[0].id;
+  raw.frentes = [{ id: fid, nombre: 'Primero' }, { id: fid, nombre: 'Repetido' }];
+  const { I } = run('sanitizar')({ inspeccion: raw, fotos: [] });
+  assert.equal(I.frentes.length, 1);
+  assert.equal(I.frentes[0].nombre, 'Primero');
+});
+
+test('respaldo: fotos excesivas se descartan (tamaño y cantidad por ficha)', () => {
+  const raw = ficha(), fid = raw.frentes[0].id;
+  const f = { key: '0.0', frontId: fid, orig: IMG_OK, composite: null, thumb: IMG_OK };
+  const grande = { ...f, orig: 'data:image/jpeg;base64,' + 'A'.repeat(15 * 1048576 + 1) };
+  const r = run('sanitizar')({ inspeccion: raw, fotos: [grande, f] });
+  assert.equal(r.fotos.length, 1);
+  assert.equal(r.omitidas, 1);
+  const muchas = run('sanitizar')({ inspeccion: raw, fotos: Array.from({ length: 501 }, () => f) });
+  assert.equal(muchas.fotos.length, 500);
+  assert.equal(muchas.omitidas, 1);
+});
+
+test('respaldo: un archivo mayor al tope se rechaza con aviso antes de leerlo', async () => {
+  run('var __msg = null; toast = m => { __msg = m; }');
+  await run('importar')({ size: 601 * 1048576, text: () => { throw new Error('no debía leerse'); } });
+  assert.match(run('__msg'), /600 MB/);
+});
+
+test('respaldo: una imagen de más de 40 MP no se dibuja', async () => {
+  run("toJpeg = () => 'data:image/jpeg;base64,AAAA'");
+  run('loadImg = async () => ({ naturalWidth: 9000, naturalHeight: 5000 })');   // 45 MP
+  let r = await run('redibujarFotos')([{ orig: IMG_OK, composite: null }]);
+  assert.equal(r.malas, 1);
+  run('loadImg = async () => ({ naturalWidth: 1280, naturalHeight: 960 })');
+  r = await run('redibujarFotos')([{ orig: IMG_OK, composite: null }]);
+  assert.equal(r.malas, 0);
+  assert.equal(r.fotos.length, 1);
+});
+
+test('ceder() resuelve aunque no exista scheduler.yield (Safari, node)', async () => {
+  await run('ceder')();
+  const cede = run('plazo')();
+  await cede();
+});
+
+test('tema: sin valor guardado sigue al sistema; un valor guardado manda', () => {
+  const getTheme = run('getTheme');
+  const con = (guardado, oscuroSO) => { ctx.localStorage = { getItem: () => guardado, setItem() {}, removeItem() {} }; run(`mqOscuro.matches = ${oscuroSO}`); return getTheme(); };
+  assert.equal(con(null, false), 'light');
+  assert.equal(con(null, true), 'dark');
+  assert.equal(con('light', true), 'light');
+  assert.equal(con('dark', false), 'dark');
+  assert.equal(con('constructor', true), 'dark');   // valor raro = como si no hubiera
+  run('mqOscuro.matches = false');
 });
