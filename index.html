@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-3dAxRlHGHNyQJJRuqAmh/m1q6wAFKHnHQkiLYsIToJ0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-w/05lUVrzNo+VUQyCCm+xBbFcecfNvDUtRRFyYvXj38='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="color-scheme" content="light dark">
@@ -2877,7 +2877,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.25-1019';
+const APP_VERSION = '2026.11.25-1021';
 const APP_VER = '1.22';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -4401,7 +4401,7 @@ function dlgAjustes() {
 /* =====================================================================
    PDF — réplica de las fichas oficiales (formato según el proyecto)
    ===================================================================== */
-const PC = { oym: [142, 169, 219], nc: [242, 112, 112], yellow: [255, 255, 0], blue: [180, 198, 231], light: [217, 225, 242], green: [198, 224, 180], gray: [191, 191, 191], check: [106, 160, 138], x: [215, 98, 67], na: [135, 135, 135] };
+const PC = { oym: [142, 169, 219], oymSi: [135, 225, 135], oymNo: [255, 83, 83],nc: [242, 112, 112], yellow: [255, 255, 0], blue: [180, 198, 231], light: [217, 225, 242], green: [198, 224, 180], gray: [191, 191, 191], check: [106, 160, 138], x: [215, 98, 67], na: [135, 135, 135] };
 
 /* La fuente del PDF solo admite Latin-1 + algunos signos de Windows (comillas curvas, guiones, •, €…).
    Lo demás se cambia por un equivalente legible o se quita, y la validación lo avisa antes. */
@@ -4491,9 +4491,9 @@ async function construirPDF(I) {
     const tw = W - cLogo - cCod - 12, tcx = X0 + cLogo + (W - cLogo - cCod) / 2;
     font('bold', 8.6); const tl = doc.splitTextToSize(pdfTxt(p.titulo), tw);
     font('normal', 7.4); const sl = doc.splitTextToSize(pdfTxt(p.subtitulo), tw);
-    const hO = Math.max(60, 12 + tl.length * 10.5 + 4 + sl.length * 9.4 + 8);
+    const hO = Math.max(72, 12 + tl.length * 10.5 + 4 + sl.length * 9.4 + 8);
     doc.setDrawColor(0); doc.setLineWidth(0.5); doc.rect(X0, y, W, hO, 'S');
-    doc.addImage(LOGO, 'PNG', X0 + (cLogo - 60) / 2, y + (hO - 45) / 2, 60, 45);
+    doc.addImage(LOGO, 'PNG', X0 + (cLogo - 84) / 2, y + (hO - 63) / 2, 84, 63);   // logo del tamaño del formato oficial
     font('bold', 8.6); tl.forEach((l, i) => doc.text(l, tcx, y + 13 + i * 10.5, { align: 'center' }));
     font('normal', 7.4); sl.forEach((l, i) => doc.text(l, tcx, y + 13 + tl.length * 10.5 + 3 + i * 9.4, { align: 'center' }));
     [p.codigoTxt || `Código: ${p.codigo}`, `Edición: ${p.edicion}`, `${p.vigenciaLbl || 'Vigencia'}: ${p.vigencia}`].forEach((l, i) => doc.text(pdfTxt(l), XR - cCod + 4, y + 11 + i * 11));
@@ -4581,7 +4581,7 @@ async function construirPDF(I) {
       cell(subX(fi, 0), y, 3 * cSub, h1, colHdr);
       font(O ? 'normal' : 'bold', hsz); const L = flines[fi], lh = hsz * 1.15;
       L.forEach((l, i) => doc.text(l, subX(fi, 0) + 1.5 * cSub, y + h1 / 2 - (L.length - 1) * lh / 2 + hsz * 0.35 + i * lh, { align: 'center' }));
-      (O ? ['SI', 'NO', 'N/A'] : p.colSN || ['Si', 'No', 'N/A']).forEach((t, j) => { cell(subX(fi, j), y + h1, cSub, h2, colHdr); ctext(t, subX(fi, j), y + h1, cSub, h2, O ? 'normal' : 'bold', 6.1); });
+      (O ? ['SI', 'NO', 'N/A'] : p.colSN || ['Si', 'No', 'N/A']).forEach((t, j) => { cell(subX(fi, j), y + h1, cSub, h2, O ? [PC.oymSi, PC.oymNo, PC.gray][j] : colHdr); /* O&M: SI verde y NO rojo como el formato oficial */ ctext(t, subX(fi, j), y + h1, cSub, h2, O ? 'normal' : 'bold', 6.1); });
     });
     if (cObs) { cell(xObs, y, XR - xObs, HH, colHdr); ctext(O ? 'OBSERVACIONES' : p.obsTxt || 'Observaciones', xObs, y, XR - xObs, HH, O ? 'normal' : 'bold', 6.8); }
     y += HH;
