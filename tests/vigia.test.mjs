@@ -395,3 +395,70 @@ test('tema: sin valor guardado sigue al sistema; un valor guardado manda', () =>
   assert.equal(con('constructor', true), 'dark');   // valor raro = como si no hubiera
   run('mqOscuro.matches = false');
 });
+
+/* ---------- Operación y Mantenimiento Panamá (grupo de tres formularios) ---------- */
+const OYM = { 'oym-ptar': ['R-PA03-10', 6, 33, 'PTAR'], 'oym-ebar': ['R-PA03-08', 6, 34, 'EBAR'], 'oym-oc': ['R-PA03-09', 10, 55, 'OC'] };
+
+test('OyM Panamá: tres tipos con sus códigos y conteos, numeración 1. / 1.1 y prefijo de frente vacío', () => {
+  for (const [id, [cod, np, nm, sig]] of Object.entries(OYM)) {
+    const p = run('CATALOG').find(x => x.id === id);
+    assert.equal(p.codigo, cod); assert.equal(p.grupo, 'oym-panama'); assert.equal(p.prefijoFrente, '');
+    assert.equal(p.programas.length, np);
+    assert.equal(p.programas.reduce((a, pr) => a + pr.medidas.length, 0), nm);
+    const I = ficha({ projectId: id }); I.formato = plain(run('congelarFormato')(p));
+    const q = run('proj')(I);
+    assert.equal(q.programas[0].num, '1.'); assert.equal(q.programas[1].num, '2.');
+    assert.equal(q.programas[1].nums[0], '2.1'); assert.equal(q.programas[0].nums[1], '1.2');
+    assert.equal(run('fileBase')({ ...I, fecha: '2026-11-05' }), `FCSA OyM Panamá ${sig} NOV-26`);
+  }
+  assert.equal(run('unidad')('oym-panama').codigo, 'R-PA03-08 · R-PA03-09 · R-PA03-10');
+  assert.equal(run('UNIDADES').filter(u => u.id === 'oym-panama').length, 1);
+});
+
+test('OyM Panamá: las erratas de EBAR están corregidas', () => {
+  const todas = id => run('CATALOG').find(x => x.id === id).programas.flatMap(p => p.medidas);
+  assert.ok(todas('oym-ebar').includes('Se prohíbe la quema dentro de los sitios del proyecto'));
+  assert.ok(todas('oym-ebar').some(m => m.startsWith('El área está libre')));
+  assert.ok(!todas('oym-ebar').some(m => /lo sitios|esta libre/.test(m)));
+});
+
+test('numeración decimal solo en Burunga/PTAR AE y OyM; Prudente sigue sin ella', () => {
+  const I = ficha({ projectId: 'prudente' }); I.formato = plain(run('congelarFormato')(run('CATALOG').find(x => x.id === 'prudente')));
+  assert.equal(run('proj')(I).programas[1].num, undefined);
+  const B = ficha({ projectId: 'burunga-este' }); B.formato = plain(run('congelarFormato')(run('CATALOG').find(x => x.id === 'burunga-este')));
+  assert.equal(run('proj')(B).programas[1].num, '2.');
+});
+
+test('OyM Panamá: aviso mensual por grupo (una ficha de cualquier tipo cubre el mes) y fichas del grupo', () => {
+  const Real = ctx.Date;
+  ctx.Date = class extends Real { constructor(...a) { a.length ? super(...a) : super(2026, 10, 25, 12); } };
+  try {
+    const S = run('S'), nombres = () => run('avisosMes')().filter(a => a.p.id === 'oym-panama');
+    S.list = [];
+    assert.equal(nombres().length, 1); assert.equal(nombres()[0].p.nombre, 'Operación y Mantenimiento Panamá');
+    assert.equal(run('avisosMes')().filter(a => a.p.id.startsWith('oym-') && a.p.id !== 'oym-panama').length, 0);
+    S.list = [ficha({ projectId: 'oym-oc', fecha: '2026-11-03' })];
+    assert.equal(nombres().length, 0);
+    assert.equal(run('fichasDe')('oym-panama').length, 1);
+    assert.equal(run('fichasDe')('oym-ptar').length, 0);   // fichasDe de un tipo suelto no recibe el grupo entero
+    assert.equal(run('unidadDe')('oym-oc'), 'oym-panama');
+    // el grupo se desactiva como unidad
+    run('A').inactivos = ['oym-panama']; assert.equal(run('activo')('oym-ebar'), false); run('A').inactivos = [];
+    S.list = [];
+  } finally { ctx.Date = Real; }
+});
+
+test('OyM Panamá: Inicio, vista del grupo, Indicadores y diálogo de nueva ficha se dibujan sin error', () => {
+  ctx.history = { state: null, pushState() {}, replaceState() {}, back() {} }; ctx.location.hash = '';
+  const S = run('S'); S.list = [ficha({ projectId: 'oym-ebar', fecha: '2026-11-03' }), ficha({ projectId: 'oym-oc', fecha: '2026-11-04' })];
+  run('renderProyectos')();
+  run('renderProyecto')('oym-panama');
+  S.ind = { projectId: 'oym-panama', periodo: '12m', desde: '', hasta: '' };
+  run('renderInd')();
+  assert.equal(S.ind.projectId, 'oym-ptar');   // un id de grupo abre su primer tipo
+  const modal0 = ctx.modal; let cfg; ctx.modal = c => { cfg = c; };
+  run('dlgNueva')('oym-panama', true); ctx.modal = modal0;
+  assert.deepEqual([...cfg.body.matchAll(/<input type="radio"[^>]*value="([^"]+)"/g)].map(m => m[1]), ['oym-ptar', 'oym-ebar', 'oym-oc']);
+  assert.ok(!/class="f nt"[^>]*hidden/.test(cfg.body));   // el selector de tipo se ve cuando el grupo viene fijo
+  S.list = []; S.ind = null;
+});
