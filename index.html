@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-G/ZCxmrMgu2K7EgPDWBfq2VPzbIo4RQIbGNFoA4Exi8='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-3dAxRlHGHNyQJJRuqAmh/m1q6wAFKHnHQkiLYsIToJ0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="color-scheme" content="light dark">
@@ -2498,6 +2498,7 @@ const CATALOG = [
  },
  {
   "id": "oym-ptar",
+  "estiloPDF": "oym",
   "grupo": "oym-panama",
   "tipo": "PTAR",
   "nombre": "OyM Panamá · PTAR",
@@ -2606,6 +2607,7 @@ const CATALOG = [
  },
  {
   "id": "oym-ebar",
+  "estiloPDF": "oym",
   "grupo": "oym-panama",
   "tipo": "EBAR",
   "nombre": "OyM Panamá · EBAR",
@@ -2715,6 +2717,7 @@ const CATALOG = [
  },
  {
   "id": "oym-oc",
+  "estiloPDF": "oym",
   "grupo": "oym-panama",
   "tipo": "Obras civiles",
   "nombre": "OyM Panamá · Obras civiles",
@@ -2874,7 +2877,7 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.25-0957';
+const APP_VERSION = '2026.11.25-1019';
 const APP_VER = '1.22';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -4398,7 +4401,7 @@ function dlgAjustes() {
 /* =====================================================================
    PDF — réplica de las fichas oficiales (formato según el proyecto)
    ===================================================================== */
-const PC = { nc: [242, 112, 112], yellow: [255, 255, 0], blue: [180, 198, 231], light: [217, 225, 242], green: [198, 224, 180], gray: [191, 191, 191], check: [106, 160, 138], x: [215, 98, 67], na: [135, 135, 135] };
+const PC = { oym: [142, 169, 219], nc: [242, 112, 112], yellow: [255, 255, 0], blue: [180, 198, 231], light: [217, 225, 242], green: [198, 224, 180], gray: [191, 191, 191], check: [106, 160, 138], x: [215, 98, 67], na: [135, 135, 135] };
 
 /* La fuente del PDF solo admite Latin-1 + algunos signos de Windows (comillas curvas, guiones, •, €…).
    Lo demás se cambia por un equivalente legible o se quita, y la validación lo avisa antes. */
@@ -4430,13 +4433,15 @@ async function construirPDF(I) {
   doc.setProperties({ title: fileBase(I), subject: p.titulo, creator: 'Vigía - Desarrollada por Ricardo Espino G.' });
   doc.setLineCap('round');
   doc.avisos = [];
-  const colHdr = p.colorEncabezado === 'claro' ? PC.light : p.colorEncabezado === 'blanco' ? null : PC.blue;
+  // Fichas de O&M Panamá: franja azul por aspecto con el % de cada sitio, sin cuadrícula fuerte en el encabezado
+  const O = p.estiloPDF === 'oym';
+  const colHdr = O ? null : p.colorEncabezado === 'claro' ? PC.light : p.colorEncabezado === 'blanco' ? null : PC.blue;
   const colProg = p.colorPrograma === 'gris' ? PC.gray : PC.blue;
   // Ficha de Burunga: "1" en la casilla, % y conteos en la banda del programa, observaciones numeradas al final
   const B = p.estiloPDF === 'burunga';
 
   // Columnas
-  const cNum = 22, cSub = 20;
+  const cNum = O ? 0 : 22, cSub = 20;
   let cObs = B ? 0 : 165, cAct = W - cNum - nf * 3 * cSub - cObs;
   if (!B && cAct > 300) { cObs += cAct - 300; cAct = 300; }
   const X0 = M, xAct = X0 + cNum, xF = xAct + cAct, xObs = xF + nf * 3 * cSub, XR = X0 + W;
@@ -4482,6 +4487,19 @@ async function construirPDF(I) {
 
   /* --- Encabezado del documento (página 1) --- */
   const hH = p.tituloBloque ? 62 : 52, cLogo = 100, cCod = 128, hb = p.encabezadoBold ? 'bold' : 'normal';
+  if (O) {
+    const tw = W - cLogo - cCod - 12, tcx = X0 + cLogo + (W - cLogo - cCod) / 2;
+    font('bold', 8.6); const tl = doc.splitTextToSize(pdfTxt(p.titulo), tw);
+    font('normal', 7.4); const sl = doc.splitTextToSize(pdfTxt(p.subtitulo), tw);
+    const hO = Math.max(60, 12 + tl.length * 10.5 + 4 + sl.length * 9.4 + 8);
+    doc.setDrawColor(0); doc.setLineWidth(0.5); doc.rect(X0, y, W, hO, 'S');
+    doc.addImage(LOGO, 'PNG', X0 + (cLogo - 60) / 2, y + (hO - 45) / 2, 60, 45);
+    font('bold', 8.6); tl.forEach((l, i) => doc.text(l, tcx, y + 13 + i * 10.5, { align: 'center' }));
+    font('normal', 7.4); sl.forEach((l, i) => doc.text(l, tcx, y + 13 + tl.length * 10.5 + 3 + i * 9.4, { align: 'center' }));
+    [p.codigoTxt || `Código: ${p.codigo}`, `Edición: ${p.edicion}`, `${p.vigenciaLbl || 'Vigencia'}: ${p.vigencia}`].forEach((l, i) => doc.text(pdfTxt(l), XR - cCod + 4, y + 11 + i * 11));
+    y += hO;
+    doc.setLineWidth(1.3); doc.line(X0, y + 3, XR, y + 3); doc.setLineWidth(0.5); y += 9;   // línea gruesa bajo el recuadro, como el original
+  } else {
   cell(X0, y, cLogo, hH);
   doc.addImage(LOGO, 'PNG', X0 + (cLogo - 60) / 2, y + (hH - 45) / 2, 60, 45);
   if (p.tituloBloque) {
@@ -4505,12 +4523,24 @@ async function construirPDF(I) {
   [p.codigoTxt || `Código: ${p.codigo}`, `Edición: ${p.edicion}`, `${p.vigenciaLbl || 'Vigencia'}: ${p.vigencia}`].forEach((l, i) => doc.text(pdfTxt(l), XR - cCod + 3, cy0 + i * 11));
   y += hH;
   if (p.banda) { cell(X0, y, W, 15, PC.gray); ctext(p.banda, X0, y, W, 15, 'bold', 6.8); y += 15; }
+  }
 
   const dma = f => { if (!f) return ''; const [a, m, d] = f.split('-'); return `Día: ${d}    Mes: ${m}    Año: ${a}`; };
   const VAL = { inspectores: I.inspectores.join(', '), zona: zona(I), fecha: B ? dma(I.fecha) : fechaCorta(I.fecha), proyecto: p.proyectoTxt || '', contratista: I.contratista, acompanamiento: (I.acompanamiento || []).join(', ') || '-' };   // sin acompañantes: guion, para que el renglón no quede vacío
   const vb = p.valoresBold ? 'bold' : 'normal';
   const lblOf = c => (p.labels || {})[c] ?? LABELS[c];
-  if (p.camposEnLinea) campos(p).forEach(c => {
+  if (O) { campos(p).forEach(c => {
+    // Etiqueta a la izquierda y valor en recuadro, sin colores
+    const cL = p.etiquetaW || cLogo;
+    font(vb, 7);
+    const vl = doc.splitTextToSize(pdfTxt(VAL[c]), W - cL - 8);
+    const h = Math.max(14, vl.length * 8 + 5);
+    y += 3; font('normal', 7.2); doc.text(pdfTxt(lblOf(c)), X0 + 4, y + h / 2 + 2.5);
+    cell(X0 + cL, y, W - cL, h);
+    font(vb, 7); vl.forEach((t, i) => doc.text(t, X0 + cL + 4, y + h / 2 - (vl.length - 1) * 4 + 2.5 + i * 8));
+    y += h;
+  }); y += 8; }
+  else if (p.camposEnLinea) campos(p).forEach(c => {
     // "Etiqueta: valor" en una sola celda de ancho completo
     const runs = [...(lblOf(c) ? [{ t: lblOf(c) + ' ', b: true }] : []), { t: VAL[c] || '', b: vb === 'bold' }];
     const L = wrapRich(runs, 6.6, W - 6), h = Math.max(13, L.length * 7.8 + 5);
@@ -4543,20 +4573,21 @@ async function construirPDF(I) {
   });
   const h1 = Math.max(13, Math.max(...flines.map(L => L.length)) * hsz * 1.15 + 5), h2 = 11, HH = h1 + h2;
   const colHeader = () => {
-    cell(X0, y, cNum, HH, colHdr); ctext(B ? 'Ítem' : '#', X0, y, cNum, HH, 'bold', B ? 5.8 : 6.5);
+    if (!O) { cell(X0, y, cNum, HH, colHdr); ctext(B ? 'Ítem' : '#', X0, y, cNum, HH, 'bold', B ? 5.8 : 6.5); }
     cell(xAct, y, cAct, HH, colHdr);
-    const at = p.actividadesTxt || ['ACTIVIDADES', 'Programas/Planes, Acciones específicas'];
+    const at = O ? ['ASPECTO'] : p.actividadesTxt || ['ACTIVIDADES', 'Programas/Planes, Acciones específicas'];
     font('bold', 6.6); at.forEach((t, i) => doc.text(pdfTxt(t), xAct + cAct / 2, y + HH / 2 - (at.length - 1) * 4.25 + 2.3 + i * 8.5, { align: 'center' }));
     I.frentes.forEach((f, fi) => {
       cell(subX(fi, 0), y, 3 * cSub, h1, colHdr);
-      font('bold', hsz); const L = flines[fi], lh = hsz * 1.15;
+      font(O ? 'normal' : 'bold', hsz); const L = flines[fi], lh = hsz * 1.15;
       L.forEach((l, i) => doc.text(l, subX(fi, 0) + 1.5 * cSub, y + h1 / 2 - (L.length - 1) * lh / 2 + hsz * 0.35 + i * lh, { align: 'center' }));
-      (p.colSN || ['Si', 'No', 'N/A']).forEach((t, j) => { cell(subX(fi, j), y + h1, cSub, h2, colHdr); ctext(t, subX(fi, j), y + h1, cSub, h2, 'bold', 6.1); });
+      (O ? ['SI', 'NO', 'N/A'] : p.colSN || ['Si', 'No', 'N/A']).forEach((t, j) => { cell(subX(fi, j), y + h1, cSub, h2, colHdr); ctext(t, subX(fi, j), y + h1, cSub, h2, O ? 'normal' : 'bold', 6.1); });
     });
-    if (cObs) { cell(xObs, y, XR - xObs, HH, colHdr); ctext(p.obsTxt || 'Observaciones', xObs, y, XR - xObs, HH, 'bold', 6.8); }
+    if (cObs) { cell(xObs, y, XR - xObs, HH, colHdr); ctext(O ? 'OBSERVACIONES' : p.obsTxt || 'Observaciones', xObs, y, XR - xObs, HH, O ? 'normal' : 'bold', 6.8); }
     y += HH;
   };
   const newPage = () => { closeTable(y); doc.addPage([PW, PH], 'portrait'); y = M; tableTop = M; colHeader(); };
+  if (O) tableTop = y;   // el recuadro grueso de la tabla empieza en el encabezado de columnas
   colHeader();
 
   /* --- Programas, subtítulos y medidas --- */
@@ -4564,7 +4595,7 @@ async function construirPDF(I) {
   const rowOf = (pr, pi, mi) => {
     const k = pi + '.' + mi;
     font('normal', SZ);
-    const al = doc.splitTextToSize(pdfTxt(pr.medidas[mi]), cAct - 6);
+    const al = doc.splitTextToSize(pdfTxt(O ? pr.nums[mi] + ' ' + pr.medidas[mi] : pr.medidas[mi]), cAct - 6);
     const groups = obsAgrupada(I, k);
     const runs = []; groups.forEach((g, gi) => { runs.push({ t: g.fs.join(', ') + ':', b: true }); runs.push({ t: ' ' + g.t + (gi < groups.length - 1 ? ' ' : ''), b: false }); });
     const ol = runs.length && cObs ? wrapRich(runs, OSZ, XR - xObs - 6) : [];
@@ -4581,7 +4612,7 @@ async function construirPDF(I) {
       const h = whole ? need : room;
       const nA = whole ? remA : Math.min(remA, Math.max(0, Math.floor((h - 6) / LH)));
       const nO = whole ? remO : Math.min(remO, Math.max(0, Math.floor((h - 6) / OLH)));
-      cell(X0, y, cNum, h); if (first) ctext(String(r.num), X0, y, cNum, Math.min(h, whole ? h : 16), 'normal', 6.5);
+      if (!O) { cell(X0, y, cNum, h); if (first) ctext(String(r.num), X0, y, cNum, Math.min(h, whole ? h : 16), 'normal', 6.5); }
       cell(xAct, y, cAct, h);
       font('normal', SZ);
       const seg = r.al.slice(ai, ai + nA);
@@ -4621,6 +4652,11 @@ async function construirPDF(I) {
         c.forEach((n, j) => { cell(subX(fi, j), y + BH, cSub, BH, colProg); ctext(String(n), subX(fi, j), y + BH, cSub, BH, 'bold', 6.1); });
       });
       y += 2 * BH;
+    } else if (O) {
+      // Franja azul que cruza la tabla: nombre del aspecto y % por sitio sobre su bloque SI/NO/N/A
+      cell(X0, y, xF - X0, BAND, PC.oym); ctext((pr.num ? pr.num + ' ' : '') + pr.nombre, X0, y, xF - X0, BAND, 'bold', 6.9, 'left');
+      I.frentes.forEach((f, fi) => { const v = progPct(I, pi, f.id); cell(subX(fi, 0), y, 3 * cSub, BAND, PC.oym); ctext(v == null ? 'N/A' : pctTxt(v, dec), subX(fi, 0), y, 3 * cSub, BAND, 'bold', 6.6); });
+      cell(xObs, y, XR - xObs, BAND); y += BAND;
     } else if (pr.num) { cell(X0, y, cNum, BAND, colProg); ctext(pr.num, X0, y, cNum, BAND, 'bold', 6.9); cell(xAct, y, W - cNum, BAND, colProg); ctext(pr.nombre, xAct, y, W - cNum, BAND, 'bold', 6.9, 'left'); y += BAND; }
     else band(pr.nombre, BAND, colProg, 'bold', 6.9);
     rows.forEach((r, mi) => {
@@ -4630,7 +4666,7 @@ async function construirPDF(I) {
       }
       drawRow(r);
     });
-    if (B) return;
+    if (B || O) return;
     // Cumplimiento del programa
     if (y + CRH > BOT) newPage();
     cell(X0, y, xF - X0, CRH, PC.green); ctext('Cumplimiento del programa', X0, y, xF - X0, CRH, 'normal', 6.5, 'left');

@@ -407,6 +407,7 @@ test('OyM Panamá: tres tipos con sus códigos y conteos, numeración 1. / 1.1 y
     assert.equal(p.programas.reduce((a, pr) => a + pr.medidas.length, 0), nm);
     const I = ficha({ projectId: id }); I.formato = plain(run('congelarFormato')(p));
     const q = run('proj')(I);
+    assert.equal(q.estiloPDF, 'oym');   // el PDF usa el estilo de O&M, que sobrevive al congelado del formato
     assert.equal(q.programas[0].num, '1.'); assert.equal(q.programas[1].num, '2.');
     assert.equal(q.programas[1].nums[0], '2.1'); assert.equal(q.programas[0].nums[1], '1.2');
     assert.equal(run('fileBase')({ ...I, fecha: '2026-11-05' }), `FCSA OyM Panamá ${sig} NOV-26`);
