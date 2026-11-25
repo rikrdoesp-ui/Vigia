@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-w/05lUVrzNo+VUQyCCm+xBbFcecfNvDUtRRFyYvXj38='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-k5ebDWUwxKF4D+cDwzrEtYDjbWxDRdiv2/ELQ1OXK5I=' 'sha256-l8/xU8l2XyW1uvtpOPMyOfuY8yEXWeGqVv+aUYbIFkk=' 'sha256-YLhJ6C6YAoZzUj6QPOpYjlAIz+7eNB/ahxF+8xh9rNY=' 'sha256-GV1aHc0rzkEefu6QOgEOFFOyoh7etEl4JaZASYA/yj8='; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src data:; manifest-src 'self'; worker-src 'self'; frame-src blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1c1f86">
 <meta name="color-scheme" content="light dark">
@@ -2877,8 +2877,8 @@ const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV'
 const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MAX_FRENTES = 6;
 const APP_KEY = 'fcsa-fichas';
-const APP_VERSION = '2026.11.25-1021';
-const APP_VER = '1.22';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
+const APP_VERSION = '2026.11.25-1039';
+const APP_VER = '1.23';   // versión corta visible (tools/publicar.mjs la sube +0.01 en cada publicación)
 
 const $ = (s, el = document) => el.querySelector(s);
 const behav = () => (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');   // desplazamiento animado solo si el usuario lo admite
@@ -4488,15 +4488,17 @@ async function construirPDF(I) {
   /* --- Encabezado del documento (página 1) --- */
   const hH = p.tituloBloque ? 62 : 52, cLogo = 100, cCod = 128, hb = p.encabezadoBold ? 'bold' : 'normal';
   if (O) {
-    const tw = W - cLogo - cCod - 12, tcx = X0 + cLogo + (W - cLogo - cCod) / 2;
-    font('bold', 8.6); const tl = doc.splitTextToSize(pdfTxt(p.titulo), tw);
-    font('normal', 7.4); const sl = doc.splitTextToSize(pdfTxt(p.subtitulo), tw);
-    const hO = Math.max(72, 12 + tl.length * 10.5 + 4 + sl.length * 9.4 + 8);
+    // Título y subtítulo centrados (horizontal y vertical) entre el logo y el código, con margen para que no toquen el código
+    const tw = W - cLogo - cCod - 36, tcx = X0 + cLogo + (W - cLogo - cCod) / 2, TL = 12, SL = 10, GAP = 6;
+    font('bold', 9.6); const tl = doc.splitTextToSize(pdfTxt(p.titulo), tw);
+    font('normal', 7.8); const sl = doc.splitTextToSize(pdfTxt(p.subtitulo), tw);
+    const hBloque = tl.length * TL + GAP + sl.length * SL, hO = Math.max(80, hBloque + 24);
     doc.setDrawColor(0); doc.setLineWidth(0.5); doc.rect(X0, y, W, hO, 'S');
     doc.addImage(LOGO, 'PNG', X0 + (cLogo - 84) / 2, y + (hO - 63) / 2, 84, 63);   // logo del tamaño del formato oficial
-    font('bold', 8.6); tl.forEach((l, i) => doc.text(l, tcx, y + 13 + i * 10.5, { align: 'center' }));
-    font('normal', 7.4); sl.forEach((l, i) => doc.text(l, tcx, y + 13 + tl.length * 10.5 + 3 + i * 9.4, { align: 'center' }));
-    [p.codigoTxt || `Código: ${p.codigo}`, `Edición: ${p.edicion}`, `${p.vigenciaLbl || 'Vigencia'}: ${p.vigencia}`].forEach((l, i) => doc.text(pdfTxt(l), XR - cCod + 4, y + 11 + i * 11));
+    const y0 = y + (hO - hBloque) / 2 + 8;
+    font('bold', 9.6); tl.forEach((l, i) => doc.text(l, tcx, y0 + i * TL, { align: 'center' }));
+    font('normal', 7.8); sl.forEach((l, i) => doc.text(l, tcx, y0 + tl.length * TL + GAP + i * SL, { align: 'center' }));
+    font('normal', 7.8); [p.codigoTxt || `Código: ${p.codigo}`, `Edición: ${p.edicion}`, `${p.vigenciaLbl || 'Vigencia'}: ${p.vigencia}`].forEach((l, i) => doc.text(pdfTxt(l), XR - cCod + 10, y + hO / 2 - 9 + i * 12));
     y += hO;
     doc.setLineWidth(1.3); doc.line(X0, y + 3, XR, y + 3); doc.setLineWidth(0.5); y += 9;   // línea gruesa bajo el recuadro, como el original
   } else {
